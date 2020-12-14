@@ -2,6 +2,7 @@
 rm(list=ls())
 library(ape)
 setwd("~/Desktop/climate_niche_seed_dispersal/data")
+setwd("~/2021_SeedDispersal/")
 
 tree.dir <- paste0(getwd(), "/trees")
 trait.dir <- paste0(getwd(), "/trait_data")

@@ -41,6 +41,8 @@ library(maptools)
 library(sp)
 library(rgeos)
 library(rworldmap)
+library(data.table)
+
 wrld_map <- getMap(resolution="low") # leaving both maps in the code for now, should probably drop one of them later
 data(wrld_simpl) 
 
@@ -48,6 +50,7 @@ data(wrld_simpl)
 
 points.dir <- "~/Desktop/climate_niche_seed_dispersal/GBIF_points"
 point_files <- list.files(points.dir, ".csv")
+point_files <- point_files[!grepl("cleaned", point_files)]
 points <- lapply(paste0(points.dir, "/", point_files), fread,quote="")
 names(points) <- unlist(lapply(strsplit(point_files, "_"), "[[", 1))
 setwd(points.dir)
@@ -170,6 +173,12 @@ for(i in 1:length(points)) {
 names(cleaned_points) <- names(points)
 
 
+points.dir <- "~/Desktop/climate_niche_seed_dispersal/GBIF_points"
+cleaned_point_files <- list.files(points.dir, ".csv")
+cleaned_point_files <- cleaned_point_files[grepl("cleaned", cleaned_point_files)]
+cleaned_points <- lapply(paste0(points.dir, "/", cleaned_point_files), fread)
+names(cleaned_points) <- unlist(lapply(strsplit(cleaned_point_files, "_"), "[[", 1))
+
 # Ploting
 spp <- unique(points_cleaned$species)
 pdf(paste0(points.dir, "/", names(points)[family_index], "_points.pdf"))
@@ -232,13 +241,17 @@ GetClimateSummStats <- function (points, lat = "decimalLatitude", lon="decimalLo
 
 # Test 
 
-test_summstats <- GetClimateSummStats(cleaned_points$Melastomataceae, lat = "decimalLatitude", lon="decimalLongitude", res=2.5, file_name="Melastomataceae_summstats") 
-  
+for(i in 1:length(cleaned_points)) {
+  test_summstats <- GetClimateSummStats(cleaned_points[[i]], lat = "decimalLatitude", lon="decimalLongitude", res=2.5, file_name=paste0(names(cleaned_points)[i], "_summ_stats")) 
+}
 
 #------------------------------
 # Thinning to smooth sampling bias?
 #------------------------------
 
+convert_temp <- function(temp){
+  return(((temp/10) * 1.8) + 32)
+}
 
 spp <- unique(points_cleaned$species)
 all_points <- list()

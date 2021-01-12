@@ -10,7 +10,7 @@ getResultsTable <- function(file){
   load(file)
   # the results table
   ResTable <- matrix(0, length(obj), 5)
-  rownames(ResTable) <- c("ER", "ARD", "ER/ER", "ARD/ARD", "ER/ARD")
+  rownames(ResTable) <- c("ER", "ARD", "ER/ER.1", "ER/ER.2", "ARD/ARD.1", "ARD/ARD.2", "ER/ARD.1", "ER/ARD.2")
   colnames(ResTable) <- c("k.rate", "AICc", "AICcWt", "MeanRate", "ASR")
   count <- 1
   for(i in 1:length(obj)){
@@ -37,7 +37,7 @@ getResultsTable <- function(file){
   ResTable[ResTable[,3] < 0.001,3] <- "<0.001"
   ResTable[ResTable[,4] < 0.001,4] <- "<0.001"
   table.name <- gsub(".Rsave", ".csv", file)
-  table.name <- gsub("rsave_corhmm", "table_corhmm", table.name)
+  table.name <- gsub("res_corhmm", "table_corhmm", table.name)
   table.name <- gsub("corRes", "ResTable", table.name)
   write.csv(ResTable, file = table.name)
   return(ResTable)
@@ -65,7 +65,7 @@ getModelRateMats <- function(file){
     }
   }
   table.name <- gsub(".Rsave", ".csv", file)
-  table.name <- gsub("rsave_corhmm", "table_corhmm", table.name)
+  table.name <- gsub("res_corhmm", "table_corhmm", table.name)
   table.name <- gsub("corRes", "QMat", table.name)
   write.csv(res, file = table.name)
   return(res)
@@ -87,7 +87,7 @@ getWeightedASR <- function(file){
     res <- res + (ASR_i * AICwt[i])
   }
   table.name <- gsub(".Rsave", ".csv", file)
-  table.name <- gsub("rsave_corhmm", "table_corhmm", table.name)
+  table.name <- gsub("res_corhmm", "table_corhmm", table.name)
   table.name <- gsub("corRes", "ASR", table.name)
   write.csv(res, file = table.name)
   return(res)
@@ -97,8 +97,8 @@ getWeightedASR <- function(file){
 wd <- "~/2021_SeedDispersal/"
 setwd(wd)
 
-Rsaves <- paste0(wd, "rsave_corhmm/", dir("rsave_corhmm/"))
-labels <- unlist(lapply(strsplit(dir("rsave_corhmm/"), "-"), function(x) x[1]))
+Rsaves <- paste0(wd, "res_corhmm/", dir("res_corhmm/"))
+labels <- unlist(lapply(strsplit(dir("res_corhmm/"), "-"), function(x) x[1]))
 
 for(i in Rsaves){
   getResultsTable(i)

@@ -37,16 +37,28 @@ testMkToHMM <- function(file){
   return(round(MK_LogLik, 5) == round(MK2HMM_LogLik$loglik, 5))
 }
 
+getSimmaps <- function(file, save.file, nMap){
+  load(file)
+  Q <- getModelAvgRate(file)
+  phy <- obj[[1]]$phy
+  dat <- obj[[1]]$data
+  simmaps <- makeSimmap(phy, dat, Q, 2, nSim = nMap)
+  save(simmaps, file = save.file)
+  return(simmaps)
+}
+
 ## imports
 require(corHMM)
 
 ## run
 
 # file organization
-wd <- "~/2021_SeedDispersal/"
+# wd <- "~/2021_SeedDispersal/"
+wd <- getwd()
 setwd(wd)
-Rsaves <- paste0(wd, "res_corhmm/", dir("res_corhmm/"))
+Rsaves <- paste0(wd, "/res_corhmm/", dir("res_corhmm/"))
 labels <- unlist(lapply(strsplit(dir("res_corhmm/"), "-"), function(x) x[1]))
+save.files <- paste0(wd, "/simmaps/", labels, "-Simmaps.R")
 
 # test that the we can make a HMM structure with a MK model and get the same likelihood (this will allow us to model average MK and HMMs)
 testMkToHMM(Rsaves[1])
@@ -59,4 +71,13 @@ getModelAvgRate(Rsaves[1])
 getModelAvgRate(Rsaves[2])
 getModelAvgRate(Rsaves[3])
 getModelAvgRate(Rsaves[4])
+
+# run the simmaps
+maps <- vector("list", length(Rsaves))
+for(i in 1:length(Rsaves)){
+  maps[[i]] <- getSimmaps(file = Rsaves[i], save.file = save.files[i], 1000)
+}
+
+
+
 

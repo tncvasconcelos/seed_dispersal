@@ -132,11 +132,9 @@ names(summstats) <- unlist(lapply(strsplit(summstats_files, "_"), "[[", 1))
 # Trait data
 trait.dir <- "~/Desktop/climate_niche_seed_dispersal/seed_dispersal/trait_data"
 trait_files <- list.files(trait.dir, ".csv")
-traits <- lapply(paste0(trait.dir, "/", trait_files), read.csv)
-labels <- unlist(lapply(strsplit(trait_files, "_"), "[[", 1))
+traits <- lapply(paste0(trait.dir, "/", trait_files[grep("trait_data",trait_files)]), read.csv)
+labels <- unique(unlist(lapply(strsplit(trait_files, "_"), "[[", 1)))
 names(traits) <- labels
-
-cleaned_table_abiotic <- cleaned_table_biotic <- matrix(nrow=0, ncol=3)
 
 for(group_index in 1:length(labels)) {
   group <- names(traits)[group_index]
@@ -156,6 +154,7 @@ for(group_index in 1:length(labels)) {
   # reorganizing
   cleaned_table <- cleaned_table[,c("species","mean_bio1","temp_breadth","mean_bio12","prec_breadth","Dispersal_mode")]
   colnames(cleaned_table) <- c("species","temp","temp_breadth","prec","prec_breadth","Dispersal_mode")
+  cleaned_table[,c("temp","temp_breadth")] <- (cleaned_table[,c("temp","temp_breadth")] /10) + 273 # celcius to kelvin
   write.csv(cleaned_table, file=paste0(trait.dir,"/",group, "_niche.csv"))
 }
 

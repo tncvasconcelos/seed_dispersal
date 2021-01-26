@@ -1,25 +1,29 @@
 # this script will run corHMM analyses on the 4 datasets
 # set wd
+# wd <- "~/Desktop/climate_niche_seed_dispersal/seed_dispersal"
 wd <- "~/2021_SeedDispersal/"
 setwd(wd)
-# wd <- paste0(getwd(), "/")
+wd <- paste0(getwd(), "/")
 
 ## imports
 require(corHMM)
 
 ## functions
+
 clean_dat <- function(csv, tre, remove=TRUE){
   # read files
   dat <- read.csv(csv)[,c(1,2)]
   phy <- read.tree(tre)
-  missing_data <- c("remove","no_info","doubtful")
+  missing_data <- c("no_info","doubtful")
+  to_remove <- "remove" # these ones are to be removed anyway because they are outgroups
   # if unknown data is to be removed, remove it 
   # else, replace with unknown (?)
   if(remove == TRUE){
-    phy <- drop.tip(phy, dat[,1][which(dat[,2] %in% missing_data)])
+    phy <- drop.tip(phy, dat[,1][which(dat[,2] %in% c(missing_data, to_remove))]) # removes both missing data and outgroups
     dat <- dat[dat[,1] %in% phy$tip.label,]
     dat <- dat[order(match(dat[,1],phy$tip.label)),]
   }else{
+    phy <- drop.tip(phy, dat[,1][which(dat[,2] %in% to_remove)]) # removes only outgroups
     dat[dat[,2] %in% missing_data,2] <- "?"
     dat <- dat[order(match(dat[,1],phy$tip.label)),]
   }
@@ -73,8 +77,9 @@ runCorHMM <- function(data_list, name, nStarts=0, nCores=1){
 }
 
 ## import and organize the data
-labels <- unlist(lapply(strsplit(sort(dir("trait_data/")), "_"), function(x) x[1]))
+labels <- unique(unlist(lapply(strsplit(sort(dir("trait_data/")), "_"), function(x) x[1])))
 csv <- paste0(wd, "trait_data/", sort(dir("trait_data/")))
+csv <- csv[grep("_trait_data", csv)]
 tre <- paste0(wd, "trees/", sort(dir("trees/")))
 data <- mapply(clean_dat, csv, tre, TRUE)
 colnames(data) <- labels

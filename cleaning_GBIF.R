@@ -102,24 +102,24 @@ for(family_index in 1:length(all_cleaned_points)) {
 points.dir <- "~/Desktop/climate_niche_seed_dispersal/GBIF_points"
 cleaned_point_files <- list.files(points.dir, ".csv")
 cleaned_point_files <- cleaned_point_files[grepl("cleaned", cleaned_point_files)]
-cleaned_points <- lapply(paste0(points.dir, "/", cleaned_point_files), fread)
-names(cleaned_points) <- unlist(lapply(strsplit(cleaned_point_files, "_"), "[[", 1))
-
+all_cleaned_points <- lapply(paste0(points.dir, "/", cleaned_point_files), fread)
+names(all_cleaned_points) <- unlist(lapply(strsplit(cleaned_point_files, "_"), "[[", 1))
 
 ########
 # Getting climate data
 ########
-
+climate_data.dir <- "~/Desktop/climate_niche_seed_dispersal/seed_dispersal/climate_data"
 for(family_index in 1:length(all_cleaned_points)) {
   # 1. Getting value for every point
-  allpoints <- ClimateFromPoints(all_cleaned_points[[family_index]], lon="decimalLongitude", lat="decimalLatitude", res=2.5)
-  write.csv(allpoints, file=paste0(names(all_cleaned_points)[family_index], "_allpoints.csv"))
+    #allpoints <- ClimateFromPoints(all_cleaned_points[[family_index]], lon="decimalLongitude", lat="decimalLatitude", res=2.5)
+    #write.csv(allpoints, file=paste0(names(all_cleaned_points)[family_index], "_allpoints.csv"))
   # 2. Getting summary statistics of climatic variables for each species
   # Thinning occurence data first
   thinned_points <- Thinning(all_cleaned_points[[family_index]], species="species", lat = "decimalLatitude", lon="decimalLongitude", n = 1)
-  summstats <- GetClimateSummStats(thinned_points, lat = "lat", lon="lon", res=2.5)
-  write.csv(summstats, file=paste0(names(all_cleaned_points)[family_index], "_summstats.csv"))
+  summstats <- GetClimateSummStats_seed_dispersal(thinned_points, lat = "lat", lon="lon", res=2.5)
+  write.csv(summstats, file=paste0(climate_data.dir, "/", names(all_cleaned_points)[family_index], "_summstats.csv"))
 }
+
 
 #-------------------------------
 #-------------------------------
@@ -145,16 +145,23 @@ for(group_index in 1:length(labels)) {
   group_summstats$species <- sub(" ","_", group_summstats$species)
   merged_table <- merge(group_summstats, group_traits, by.x="species", by.y="Species")
 
-  cleaned_table <- merged_table[,c("species","mean_bio1","mean_bio10","mean_bio11","mean_bio12",
-                                   "mean_bio13","mean_bio14","Dispersal_mode")]
-
+  #cleaned_table <- merged_table[,c("species","mean_bio1","se_bio1","mean_bio10","mean_bio11","mean_bio12","se_bio12",
+  #                                 "mean_bio13","mean_bio14","Dispersal_mode")]
+  cleaned_table <- merged_table[,c("species","mean_bio1","se_bio1","mean_bio12","se_bio12","Dispersal_mode")]
+  
   # Creating vectors for temperature and preciptation mean and breadth
-  cleaned_table$temp_breadth <- as.numeric(cleaned_table$mean_bio10) - as.numeric(cleaned_table$mean_bio11)
-  cleaned_table$prec_breadth <- as.numeric(cleaned_table$mean_bio13) - as.numeric(cleaned_table$mean_bio14)
+  #cleaned_table$temp_breadth <- as.numeric(cleaned_table$mean_bio10) - as.numeric(cleaned_table$mean_bio11)
+  #cleaned_table$prec_breadth <- as.numeric(cleaned_table$mean_bio13) - as.numeric(cleaned_table$mean_bio14)
+  
   # reorganizing
-  cleaned_table <- cleaned_table[,c("species","mean_bio1","temp_breadth","mean_bio12","prec_breadth","Dispersal_mode")]
-  colnames(cleaned_table) <- c("species","temp","temp_breadth","prec","prec_breadth","Dispersal_mode")
-  cleaned_table[,c("temp","temp_breadth")] <- (cleaned_table[,c("temp","temp_breadth")] /10) + 273 # celcius to kelvin
+  #cleaned_table <- cleaned_table[,c("species","mean_bio1","se_bio1","mean_bio12","se_bio12","temp_breadth","prec_breadth","Dispersal_mode")]
+  #colnames(cleaned_table) <- c("species","temp","se_temp","prec","se_prec","temp_breadth","prec_breadth","Dispersal_mode")
+  cleaned_table <- cleaned_table[,c("species","mean_bio1","se_bio1","mean_bio12","se_bio12","Dispersal_mode")]
+  colnames(cleaned_table) <- c("species","temp","se_temp","prec","se_prec","Dispersal_mode")
+  
+  for(i in sequence(ncol(cleaned_table))) {
+    cleaned_table[,i][which(cleaned_table[,i] == Inf)] <- NA
+  }
   write.csv(cleaned_table, file=paste0(trait.dir,"/",group, "_niche.csv"))
 }
 

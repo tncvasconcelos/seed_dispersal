@@ -68,7 +68,7 @@ for(i in 1:length(points)) {
   cleaned_points <- RemoveSeaPoints(cleaned_points, lon="decimalLongitude", lat="decimalLatitude")
   cleaned_points <- RemoveWrongCountries(cleaned_points, lon="decimalLongitude", lat="decimalLatitude")
   cleaned_points <- RemoveHerbariaLocalities(cleaned_points, lon="decimalLongitude", lat="decimalLatitude")
-  cleaned_points <- RemoveCropsAndInvasive(cleaned_points, species="species")
+  #cleaned_points <- RemoveCropsAndInvasive(cleaned_points, species="species")
   cleaned_points <- RemoveZeros(cleaned_points, lon="decimalLongitude", lat="decimalLatitude")
   species_to_remove <- UnusualDistributions(cleaned_points, lon="decimalLongitude", lat="decimalLatitude")
   if(length(species_to_remove)>0) {
@@ -80,6 +80,8 @@ for(i in 1:length(points)) {
 names(all_cleaned_points) <- names(points)
 
 
+library(maptools)
+data("wrld_simpl")
 # Ploting
 for(family_index in 1:length(all_cleaned_points)) {
   points_cleaned <- all_cleaned_points[[family_index]]
@@ -115,8 +117,8 @@ for(family_index in 1:length(all_cleaned_points)) {
     #write.csv(allpoints, file=paste0(names(all_cleaned_points)[family_index], "_allpoints.csv"))
   # 2. Getting summary statistics of climatic variables for each species
   # Thinning occurence data first
-  # thinned_points <- Thinning(all_cleaned_points[[family_index]], species="species", lat = "decimalLatitude", lon="decimalLongitude", n = 1)
-  summstats <- GetClimateSummStats_seed_dispersal(all_cleaned_points[[family_index]],  species="species", lat = "decimalLatitude", lon="decimalLongitude", res=2.5)
+  thinned_points <- Thinning(all_cleaned_points[[family_index]], species="species", lat = "decimalLatitude", lon="decimalLongitude", n = 1)
+  summstats <- GetClimateSummStats_seed_dispersal(thinned_points,  species="species", lat = "decimalLatitude", lon="decimalLongitude", res=2.5)
   write.csv(summstats, file=paste0(climate_data.dir, "/", names(all_cleaned_points)[family_index], "_summstats.csv"))
 }
 
@@ -158,9 +160,11 @@ for(group_index in 1:length(labels)) {
   #colnames(cleaned_table) <- c("species","temp","se_temp","prec","se_prec","temp_breadth","prec_breadth","Dispersal_mode")
   cleaned_table <- cleaned_table[,c("species","mean_bio1","se_bio1","mean_bio12","se_bio12","Dispersal_mode")]
   colnames(cleaned_table) <- c("species","temp","se_temp","prec","se_prec","Dispersal_mode")
-  
-  for(i in sequence(ncol(cleaned_table))) {
-    cleaned_table[,i][which(cleaned_table[,i] == Inf)] <- NA
+  if(any(is.na(cleaned_table$prec))) {
+    cleaned_table <- cleaned_table[-which(is.na(cleaned_table$prec)),]
+  }
+  if(any(cleaned_table$prec==0)) {
+    cleaned_table <- cleaned_table[-which(cleaned_table$prec == 0),]
   }
   write.csv(cleaned_table, file=paste0(trait.dir,"/",group, "_niche.csv"))
 }

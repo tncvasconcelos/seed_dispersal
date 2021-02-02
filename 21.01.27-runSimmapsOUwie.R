@@ -114,8 +114,9 @@ CSVs <- getCSVs(wd)
 # getModelAvgRate(Rsaves[4])
 
 # input params 
-ncores <- 5
-nmap <- 10
+ncores <- 80
+nmap <- 100
+iter <- 1
 
 # run the simmaps
 for(i in 1:length(CSVs)){
@@ -123,7 +124,7 @@ for(i in 1:length(CSVs)){
   data <- getData(csv)
   # for j in each trait dataset
   for(j in 1:length(data)){
-    file.name <- paste0(wd, "/simmaps/", labels[i], "-", names(data)[j], "-", format(Sys.time(), "%y_%m_%d"), "-simmap.Rsave")
+    file.name <- paste0(wd, "/simmaps/", labels[i], "-", names(data)[j], "-", format(Sys.time(), "%y_%m_%d"), "-simmap-", iter, ".Rsave")
     simmaps <- getSimmaps(file = Rsaves[i], dat = data[[j]], save.file = file.name, nMap = nmap)
     if(dim(data[[j]])[2] == 4){
       mserr = "known"
@@ -150,18 +151,10 @@ for(i in 1:length(CSVs)){
     obj <- list(BM1, BMS, OU1, OUM, OUMA, OUMV, OUMVA)
     names(obj) <- paste0(c("BM1_", "BMS_", "OU1_", "OUM_", "OUMA_", "OUMV_", "OUMVA_"), colnames(data[[j]])[3])
     # save the modeling results of a dataset
-    file.name <- paste0(wd, "/res_ouwie/", labels[i], "-", names(data)[j], "-", format(Sys.time(), "%y_%m_%d"), "-OURes.Rsave")
+    file.name <- paste0(wd, "/res_ouwie/", labels[i], "-", names(data)[j], "-", format(Sys.time(), "%y_%m_%d"), "-OURes-", iter, ".Rsave")
     save(obj, file = file.name)
   }
 }
-
-
-
-maps <- vector("list", length(Rsaves))
-for(i in 1:length(Rsaves)){
-  maps[[i]] <- getSimmaps(file = Rsaves[i], save.file = save.files[i], 10)
-}
-
 
 
 

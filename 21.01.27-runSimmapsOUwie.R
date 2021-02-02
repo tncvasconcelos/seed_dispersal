@@ -114,7 +114,7 @@ CSVs <- getCSVs(wd)
 # getModelAvgRate(Rsaves[4])
 
 # input params 
-ncores <- 80
+ncores <- 60
 nmap <- 100
 iter <- 1
 
@@ -131,28 +131,14 @@ for(i in 1:length(CSVs)){
     }else{
       mserr = "none"
     }
-    
-    # BM1
-    BM1 <- mclapply(simmaps, function(x) singleRun(data[[j]], x, "BM1", mserr), mc.cores = ncores)
-    # BMS
-    BMS <- mclapply(simmaps, function(x) singleRun(data[[j]], x, "BMS", mserr), mc.cores = ncores)
-    # OU1
-    OU1 <- mclapply(simmaps, function(x) singleRun(data[[j]], x, "OU1", mserr), mc.cores = ncores)
-    # OUM
-    OUM <- mclapply(simmaps, function(x) singleRun(data[[j]], x, "OUM", mserr), mc.cores = ncores)
-    # OUMA
-    OUMA <- mclapply(simmaps, function(x) singleRun(data[[j]], x, "OUMA", mserr), mc.cores = ncores)
-    # OUMV
-    OUMV <- mclapply(simmaps, function(x) singleRun(data[[j]], x, "OUMV", mserr), mc.cores = ncores)
-    # OUMVA
-    OUMVA <- mclapply(simmaps, function(x) singleRun(data[[j]], x, "OUMVA", mserr), mc.cores = ncores)
-    
-    # summary
-    obj <- list(BM1, BMS, OU1, OUM, OUMA, OUMV, OUMVA)
-    names(obj) <- paste0(c("BM1_", "BMS_", "OU1_", "OUM_", "OUMA_", "OUMV_", "OUMVA_"), colnames(data[[j]])[3])
-    # save the modeling results of a dataset
-    file.name <- paste0(wd, "/res_ouwie/", labels[i], "-", names(data)[j], "-", format(Sys.time(), "%y_%m_%d"), "-OURes-", iter, ".Rsave")
-    save(obj, file = file.name)
+    models <- c("BM1", "BMS", "OU1", "OUM", "OUMA", "OUMV", "OUMVA")
+    for(k in 1:length(models)){
+      obj <- mclapply(simmaps, function(x) singleRun(data[[j]], x, models[k], mserr), mc.cores = ncores)
+      # save the modeling results of a dataset
+      file.name <- paste0(wd, "/res_ouwie/", labels[i], "-", names(data)[j], "-", format(Sys.time(), "%y_%m_%d"), "-OURes-", models[k], "-", iter, ".Rsave")
+      save(obj, file = file.name)
+      obj <- NULL
+    }
   }
 }
 

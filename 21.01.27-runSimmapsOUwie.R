@@ -114,10 +114,11 @@ CSVs <- getCSVs(wd)
 # getModelAvgRate(Rsaves[4])
 
 # input params 
-ncores <- 60
-nmap <- 100
+ncores <- 1
+nmap <- 1
 iter <- 1
-
+i = j = 1
+k = 6
 # run the simmaps
 for(i in 1:length(CSVs)){
   csv <- CSVs[i]
@@ -141,6 +142,18 @@ for(i in 1:length(CSVs)){
     }
   }
 }
+
+
+
+data <- organizeDat(data[[j]], simmaps[[1]])
+tmp <- data[,c(1,2,4)]
+obj <- obj[[1]]
+
+testA <- OUwie.boot(phy=simmaps[[1]], data=data, model=obj$model, nboot=2, alpha=obj$solution[1,], sigma.sq=obj$solution[2,], theta=obj$solution[3,], theta0=obj$theta[1,1], simmap.tree=FALSE, scaleHeight=TRUE, mserr="known", algorithm="three.point")
+
+testB <- OUwie.boot(phy=simmaps[[1]], data=data, model=obj$model, nboot=2, alpha=obj$solution[1,], sigma.sq=obj$solution[2,], theta=obj$solution[3,], theta0=obj$theta[1,1], simmap.tree=TRUE, scaleHeight=TRUE, mserr="known", algorithm="three.point")
+
+sim.data<-OUwie.sim(simmaps[[1]],tmp,simmap.tree=TRUE,scaleHeight=TRUE,alpha=obj$solution[1,], sigma.sq=obj$solution[2,], theta=obj$solution[3,], theta0=obj$theta[1,1], mserr="known")
 
 
 

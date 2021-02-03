@@ -26,7 +26,7 @@ getSummaryTable <- function(folder, dat.type, se){
   ErrMat <- matrix(unlist(lapply(ModelList, function(x) lapply(x, function(y) class(y) == "try-error"))), nMap, 7)
   ErrIndex <- which(!apply(ErrMat, 1, any))
   nRegime <- length(ModelList[[7]][[ErrIndex[1]]]$tot.states)
-  ResTables <- vector("list", length(ErrIndex))
+  ResTables <- list()
   count <- 1
   # get the relavent params and stats for each map i and model in the set
   for(i in ErrIndex){
@@ -40,6 +40,7 @@ getSummaryTable <- function(folder, dat.type, se){
     dAICcs <- AICcs - min(AICcs)
     AICcWt <- exp(-0.5 * dAICcs)/sum(exp(-0.5 * dAICcs))
     Solutions <- lapply(obj_i, function(x) x$solution)
+    if(dim(Solutions$`-OUMVA-`)[2] !=4) next
     BM1 <- c(rep(Solutions[[1]][1], nRegime), c(rep(Solutions[[1]][2], nRegime)), c(rep(Solutions[[1]][3], nRegime)))
     BMS <- c(t(Solutions[[2]]))
     OU1 <- c(rep(Solutions[[3]][1], nRegime), c(rep(Solutions[[3]][2], nRegime)), c(rep(Solutions[[3]][3], nRegime)))
@@ -87,6 +88,7 @@ getFigureTable <- function(SumTable, param){
 
 # get model averaged tip rates
 getTipRates <- function(cor_file, AvgParams){
+  load(cor_file)
   pars <- matrix(AvgParams, 4, 3, dimnames = list(c("1A", "2A", "1B", "2B"), c("Alpha", "Sigma", "Optim")))
   out <- matrix(NA, dim(res$tip.states)[1], 4, dimnames = list(rownames(res$tip.states), c("ObsSt", "Alpha", "Sigma", "Optim")))
   out <- as.data.frame(out)
@@ -118,10 +120,10 @@ dat.types <- c("temp", "prec")
 params <- c("Alpha", "Sigma", "Optim")
 
 # param <- params[3]
-ou_folder <- Folders[3]
+ou_folder <- Folders[4]
 clade <- strsplit(ou_folder, "/")[[1]][length(strsplit(ou_folder, "/")[[1]])]
 cor_file <- cor_folder[grep(clade, cor_folder)]
-se <- FALSE
+se <- TRUE
 
 # make plots for a given clade and standard error
 count <- 1

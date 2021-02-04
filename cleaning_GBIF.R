@@ -16,7 +16,6 @@ names(trees) <- labels
 
 #length(unlist(lapply(trees, "[[","tip.label")))
 
-
 #-------------------------------
 # Download GBIF data
 #-------------------------------
@@ -27,7 +26,7 @@ pwd <- "" # your gbif.org password
 email <- "" # your email
 
 for(i in 1:length(trees)){
-  taxized_names <- resolveGBIF(trees[[i]]$tip.label) # it should take about 2-3min
+  taxized_names <- resolveGBIF(trees[[i]]$tip.label) # it should take about 2-3min for each tree
   rgbif::occ_download(rgbif::pred_in("scientificName", taxized_names),
                       pred_in("basisOfRecord", 'PRESERVED_SPECIMEN'),
                       pred("hasCoordinate", TRUE),
@@ -51,7 +50,6 @@ point_files <- list.files(points.dir, ".csv")
 point_files <- point_files[!grepl("cleaned", point_files) & !grepl("summ_stats", point_files) ]
 points <- lapply(paste0(points.dir, "/", point_files), fread,quote="")
 names(points) <- unlist(lapply(strsplit(point_files, "_"), "[[", 1))
-#setwd(points.dir)
 
 #setwd("~/Desktop/rangers_all_files/rangers")
 #source("/Users/thaisvasconcelos/Desktop/rangers_all_files/rangers/R/GetTraitDistribution.R")
@@ -146,19 +144,9 @@ for(group_index in 1:length(labels)) {
   # Matching datasets
   group_summstats$species <- sub(" ","_", group_summstats$species)
   merged_table <- merge(group_summstats, group_traits, by.x="species", by.y="Species")
-
-  #cleaned_table <- merged_table[,c("species","mean_bio1","se_bio1","mean_bio10","mean_bio11","mean_bio12","se_bio12",
-  #                                 "mean_bio13","mean_bio14","Dispersal_mode")]
   cleaned_table <- merged_table[,c("species","mean_bio1","se_bio1","mean_bio12","se_bio12","Dispersal_mode")]
-  
-  # Creating vectors for temperature and preciptation mean and breadth
-  #cleaned_table$temp_breadth <- as.numeric(cleaned_table$mean_bio10) - as.numeric(cleaned_table$mean_bio11)
-  #cleaned_table$prec_breadth <- as.numeric(cleaned_table$mean_bio13) - as.numeric(cleaned_table$mean_bio14)
-  
+
   # reorganizing
-  #cleaned_table <- cleaned_table[,c("species","mean_bio1","se_bio1","mean_bio12","se_bio12","temp_breadth","prec_breadth","Dispersal_mode")]
-  #colnames(cleaned_table) <- c("species","temp","se_temp","prec","se_prec","temp_breadth","prec_breadth","Dispersal_mode")
-  cleaned_table <- cleaned_table[,c("species","mean_bio1","se_bio1","mean_bio12","se_bio12","Dispersal_mode")]
   colnames(cleaned_table) <- c("species","temp","se_temp","prec","se_prec","Dispersal_mode")
   if(any(is.na(cleaned_table$prec))) {
     cleaned_table <- cleaned_table[-which(is.na(cleaned_table$prec)),]
@@ -168,38 +156,4 @@ for(group_index in 1:length(labels)) {
   }
   write.csv(cleaned_table, file=paste0(trait.dir,"/",group, "_niche.csv"))
 }
-
-
-## Maping dispersal modes
-
-#setwd("~/Desktop/rangers_all_files/rangers")
-#source("/Users/thaisvasconcelos/Desktop/rangers_all_files/rangers/R/GetTraitDistribution.R")
-#source("/Users/thaisvasconcelos/Desktop/rangers_all_files/rangers/R/GetRanges.R")
-#template.map <- readRDS("R/template.map.Rdata")
-pal <- hcl.colors(30, palette = "SunsetDark", alpha = 1)
-
-for(i in 1:length(cleaned_points)) {
-  group <- names(traits)[i]
-  traits_group <- traits[[i]][,1:2]
-  points <- cleaned_points[[i]]
-  ranges <- GetRanges(points)
-
-  traits_group[,1] <- sub("_"," ", traits_group[,1])
-  traits_subset <- traits_group[traits_group$Species %in% names(ranges),]
-  ranges_subset <- ranges[names(ranges) %in% traits_subset$Species]
-
-  fruit_distribution <- GetTraitDistribution(ranges_subset, traits_subset, type="binary")
-
-  pdf(paste0(getwd(), "/", group, ".pdf"), height=8, width=6)
-  par(mfrow=c(2,1))
-  plot(template.map, col="gray", legend=F)
-  plot(fruit_distribution$Biotic, add=T, col=rev(pal))
-  title("Biotic")
-  plot(template.map, col="gray", legend=F)
-  plot(fruit_distribution$Abiotic, add=T, col=rev(pal))
-  title("Abiotic")
-  dev.off()
-}
-getwd()
-
 

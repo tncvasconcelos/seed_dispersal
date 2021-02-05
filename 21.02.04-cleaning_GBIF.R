@@ -111,12 +111,14 @@ names(all_cleaned_points) <- unlist(lapply(strsplit(cleaned_point_files, "_"), "
 climate_data.dir <- "~/Desktop/climate_niche_seed_dispersal/seed_dispersal/climate_data"
 for(family_index in 1:length(all_cleaned_points)) {
   # 1. Getting value for every point
-    #allpoints <- ClimateFromPoints(all_cleaned_points[[family_index]], lon="decimalLongitude", lat="decimalLatitude", res=2.5)
-    #write.csv(allpoints, file=paste0(names(all_cleaned_points)[family_index], "_allpoints.csv"))
+  #  allpoints <- ClimateFromPoints(all_cleaned_points[[family_index]], lon="decimalLongitude", lat="decimalLatitude", res=2.5)
+  #  write.csv(allpoints, file=paste0(names(all_cleaned_points)[family_index], "_allpoints.csv"))
   # 2. Getting summary statistics of climatic variables for each species
   # Thinning occurence data first
   thinned_points <- Thinning(all_cleaned_points[[family_index]], species="species", lat = "decimalLatitude", lon="decimalLongitude", n = 1)
-  summstats <- GetClimateSummStats_seed_dispersal(thinned_points,  species="species", lat = "decimalLatitude", lon="decimalLongitude", res=2.5)
+  allpoints <- ClimateFromPoints(thinned_points, species="species",lon="lon", lat="lat", res=2.5)
+  write.csv(allpoints, file=paste0(climate_data.dir, "/", names(all_cleaned_points)[family_index], "_allpoints.csv"))
+  summstats <- GetClimateSummStats_seed_dispersal(allpoints)
   write.csv(summstats, file=paste0(climate_data.dir, "/", names(all_cleaned_points)[family_index], "_summstats.csv"))
 }
 

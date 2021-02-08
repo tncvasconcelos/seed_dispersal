@@ -120,7 +120,7 @@ dat.types <- c("temp", "prec")
 params <- c("Alpha", "Sigma", "Optim")
 
 # param <- params[3]
-ou_folder <- Folders[4]
+ou_folder <- Folders[2]
 clade <- strsplit(ou_folder, "/")[[1]][length(strsplit(ou_folder, "/")[[1]])]
 cor_file <- cor_folder[grep(clade, cor_folder)]
 se <- TRUE
@@ -160,7 +160,29 @@ grid.arrange(plots[[1]], plots[[2]], plots[[3]],
              nrow=2, ncol=3)
 dev.off()
 
+# plot the phylogeny figure
+load(cor_file)
+Tmax <- max(branching.times(res$phy))
+phy <- ladderize(res$phy)
+cols <- viridis(2)[ifelse(res$data[,2] == "Abiotic", 1, 2)]
+Xadd <- (0.1 * Tmax)
+plot(phy, show.tip.label = FALSE, type = "fan")
+# tiplabels(pch = 16, col = cols, cex = 0.5, offset = 4)
+offset = 5
+offset <- offset * tab$Optim/max(tab$Optim)
+lastPP <- get("last_plot.phylo", envir = .PlotPhyloEnv)
+tip <- 1:lastPP$Ntip
+XX <- lastPP$xx[tip]
+YY <- lastPP$yy[tip]
+tmp <- rect2polar(XX, YY)
+tmp.init <- polar2rect(tmp$r + 0, tmp$angle)
+tmp.final <- polar2rect(tmp$r + offset, tmp$angle)
+XX.init <- tmp.init$x
+YY.init <- tmp.init$y
+XX.final <- tmp.final$x
+YY.final <- tmp.final$y
+segments(x0 = XX.init, y0 = YY.init, x1 = XX.final, YY.final, col = cols)
 
-
-
+# points(x = XX.init, y = YY.init, pch = 16, col = cols)
+# points(x = XX.final, y = YY.final, pch = 16, col = cols)
 

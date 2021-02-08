@@ -82,18 +82,6 @@ Rsaves <- paste0(wd, "/res_corhmm/", dir("res_corhmm/"))
 labels <- unlist(lapply(strsplit(dir("res_corhmm/"), "-"), function(x) x[1]))
 CSVs <- getCSVs(wd)
 
-# # test that the we can make a HMM structure with a MK model and get the same likelihood (this will allow us to model average MK and HMMs)
-# testMkToHMM(Rsaves[1])
-# testMkToHMM(Rsaves[2])
-# testMkToHMM(Rsaves[3])
-# testMkToHMM(Rsaves[4])
-# 
-# # model averaged corhmm runs
-# getModelAvgRate(Rsaves[1])
-# getModelAvgRate(Rsaves[2])
-# getModelAvgRate(Rsaves[3])
-# getModelAvgRate(Rsaves[4])
-
 # input params 
 ncores <- 40
 nmap <- 100

@@ -177,6 +177,7 @@ for(j in 1:length(dat.types)){
       scale_fill_manual(values=cols) + 
       theme(text = element_text(size = 20)) + 
       ggtitle((clade)) + 
+      ylim(0, 10) + 
       geom_boxplot()
     count <- count + 1
   }

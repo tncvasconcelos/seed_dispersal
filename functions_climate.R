@@ -441,7 +441,7 @@ GetClimateSummStats_seed_dispersal <- function (points) {
 
 GetClimateSummStats_seed_dispersal <- function (points, type=c("raw","transformed")) {
   tmp_points <- points[,-which(colnames(points) %in% c("lon","lat"))]
-  vars <- c("bio1","bio12")
+  vars <- c("bio1","bio12", "pet", "aridity")
   allclimatevars <- list()
   spp <- unique(tmp_points$species)
   for(var_index in 1:length(vars)) {
@@ -463,9 +463,6 @@ GetClimateSummStats_seed_dispersal <- function (points, type=c("raw","transforme
       n_i[species_index] <- length(values) # sample size
       sigma2_wi[species_index] <- ifelse(is.na(var(values)),0,var(values))  # sample variance
       
-       if(any(values== -Inf)){
-          values <- values[-which(values== -Inf)]
-        }
       }
       if(type=="transformed") {
         if(vars[var_index] %in% c("bio1")) {
@@ -497,4 +494,39 @@ GetClimateSummStats_seed_dispersal <- function (points, type=c("raw","transforme
   }
   return(allclimatevars)
 }
+
+
+
+AiPetFromPoint <- function(points, species="species",lon="lon", lat="lat", layerdir = ""){
+  tmp_points = points
+  colnames(tmp_points)[which(colnames(tmp_points) == lon)] <- "lon"
+  colnames(tmp_points)[which(colnames(tmp_points) == lat)] <- "lat"
+  colnames(tmp_points)[which(colnames(tmp_points) == species)] <- "species"
+  tmp_points <- tmp_points[,c("species","lat","lon")]
+
+  pet <- raster::raster(paste0(layerdir, "/et0_yr/et0_yr.tif"))
+  aridity <- raster::raster(paste0(layerdir, "/ai_et0/ai_et0.tif"))
+  bio <- raster::addLayer(pet, aridity)
+
+  vars <- c(pet, aridity)
+  names(vars) <- c("pet", "aridity") 
+  final_matrix <- matrix(nrow=nrow(tmp_points), ncol=length(vars))
+
+  cat("Extracting climatic information of", nrow(tmp_points), "points",  "\n")
+  sp::coordinates(tmp_points) <- ~ lon + lat
+  for(var_index in 1:length(vars)) {
+    layer <- bio[[var_index]]
+    cat("\r",names(vars)[var_index])
+    cat("","\n")
+    values <- raster::extract(layer, tmp_points)
+    final_matrix[,var_index] <- values
+  }
+  colnames(final_matrix) <- names(vars)
+  result <- cbind(tmp_points, final_matrix)
+  return(as.data.frame(result)[,-1])
+}
+
+
+
+
 

@@ -116,12 +116,15 @@ for(family_index in 1:length(all_cleaned_points)) {
   # 2. Getting summary statistics of climatic variables for each species
   # Thinning occurence data first
   thinned_points <- Thinning(all_cleaned_points[[family_index]], species="species", lat = "decimalLatitude", lon="decimalLongitude", n = 1)
-  allpoints <- ClimateFromPoints(thinned_points, species="species",lon="lon", lat="lat", res=2.5)
+  allpoints_a <- ClimateFromPoints(thinned_points, species="species",lon="lon", lat="lat", res=2.5)
+  allpoints_b <- AiPetFromPoint(thinned_points, species="species",lon="lon", lat="lat", layerdir = points.dir)
+  allpoints <- cbind(allpoints_a, allpoints_b)
   write.csv(allpoints, file=paste0(climate_data.dir, "/", names(all_cleaned_points)[family_index], "_allpoints.csv"))
   summstats <- GetClimateSummStats_seed_dispersal(allpoints, type="raw")
   write.csv(summstats, file=paste0(climate_data.dir, "/", names(all_cleaned_points)[family_index], "_summstats_raw.csv"))
   summstats <- GetClimateSummStats_seed_dispersal(allpoints, type="transformed")
   write.csv(summstats, file=paste0(climate_data.dir, "/", names(all_cleaned_points)[family_index], "_summstats.csv"))
+  beepr::beep("fanfare")
 }
 
 
@@ -148,10 +151,13 @@ for(group_index in 1:length(labels)) {
   # Matching datasets
   group_summstats$species <- sub(" ","_", group_summstats$species)
   merged_table <- merge(group_summstats, group_traits, by.x="species", by.y="Species")
-  cleaned_table <- merged_table[,c("species","mean_bio1","se_bio1","mean_bio12","se_bio12","Dispersal_mode")]
+  cleaned_table <- merged_table[,c("species","mean_bio1","se_bio1","within_sp_var_bio1","mean_bio12","se_bio12","within_sp_var_bio12",
+                                   "mean_pet","se_pet","within_sp_var_pet","mean_aridity","se_aridity", "within_sp_var_aridity","Dispersal_mode")]
 
   # reorganizing
-  colnames(cleaned_table) <- c("species","temp","se_temp","prec","se_prec","Dispersal_mode")
+  colnames(cleaned_table) <- c("species","temp","se_temp","within_sp_var_temp","prec","se_prec","within_sp_var_prec",
+                               "mean_pet","se_pet","within_sp_var_pet","mean_aridity","se_aridity","within_sp_var_aridity","Dispersal_mode")
+
   if(any(is.na(cleaned_table$prec))) {
     cleaned_table <- cleaned_table[-which(is.na(cleaned_table$prec)),]
   }

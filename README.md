@@ -7,7 +7,7 @@ seed dispersal paper
 
 20.12.15-analyzeCorHMM.R - preliminary analysis of corhmm models 
 
-21.01.27-runSimmapsOUwie.R - generates simmaps based on model averaged rate matrices for each dataset. also demonstrates how an Mk and HMM likelihood relate. then runs the OU models on the 1000 generated simmaps for each dataset (prec and temp with and without SE).
+21.02.05-runSimmapsOUwie.R - generates simmaps proportional to the model averages of corHMM modeling. then runs the OU models on 1000 generated simmaps for each dataset (prec and temp with and without SE).
 
 21.02.01-analyzeOUwie.R - model averages the tips so that we can values associated with abiotic and biotic parameters. produces preliminary figures.
 

@@ -82,7 +82,7 @@ organizeDat <- function(dat, simmap){
 
 singleRun <- function(dat, simmap, model, mserr){
   data <- organizeDat(dat, simmap)
-  obj <- OUwie(simmap, data, model, simmap.tree = TRUE, algorithm = "three.point", scaleHeight = TRUE, mserr = mserr)
+  obj <- OUwie(simmap, data, model, simmap.tree = TRUE, algorithm = "three.point", scaleHeight = TRUE, mserr = mserr, ub = 10)
   return(obj)
 }
 
@@ -114,9 +114,9 @@ CSVs <- getCSVs(wd)
 # getModelAvgRate(Rsaves[4])
 
 # input params 
-ncores <- 44
+ncores <- 50
 nmap <- 100
-iter <- 2
+iter <- 3
 # i = j = 1
 # k = 6
 # run the simmaps

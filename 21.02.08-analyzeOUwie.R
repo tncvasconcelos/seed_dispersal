@@ -18,19 +18,20 @@ getSummaryTable <- function(folder, dat.type, se){
   for(i in models){
     ToLoad <- files[grep(i, files)]
     load(ToLoad)
-    cat("\r", ToLoad, "loaded...                  ")
     ModelList[[count]] <- obj
     count <- count + 1
   }
   nMap <- length(ModelList[[1]])
+  corModels <- names(ModelList[[1]])
   ErrMat <- matrix(unlist(lapply(ModelList, function(x) lapply(x, function(y) class(y) == "try-error"))), nMap, 7)
   ErrIndex <- which(!apply(ErrMat, 1, any))
-  nRegime <- length(ModelList[[7]][[ErrIndex[1]]]$tot.states)
+  cat(nMap - length(ErrIndex), "models resulted in try-errors.\n")
   ResTables <- list()
   count <- 1
   # get the relavent params and stats for each map i and model in the set
   for(i in ErrIndex){
     obj_i <- lapply(ModelList, function(x) x[[i]])
+    nRegime <- length(obj_i[[7]]$tot.states)
     ResTable <- matrix(0, length(obj_i), (nRegime * 3) + 2)
     rownames(ResTable) <- unlist(lapply(strsplit(names(obj_i), "_"), function(x) x[1]))
     colnames(ResTable) <- c("AICc", "AICcWt", 
@@ -40,7 +41,7 @@ getSummaryTable <- function(folder, dat.type, se){
     dAICcs <- AICcs - min(AICcs)
     AICcWt <- exp(-0.5 * dAICcs)/sum(exp(-0.5 * dAICcs))
     Solutions <- lapply(obj_i, function(x) x$solution)
-    if(dim(Solutions$`-OUMVA-`)[2] !=4) next
+    
     BM1 <- c(rep(Solutions[[1]][1], nRegime), c(rep(Solutions[[1]][2], nRegime)), c(rep(Solutions[[1]][3], nRegime)))
     BMS <- c(t(Solutions[[2]]))
     OU1 <- c(rep(Solutions[[3]][1], nRegime), c(rep(Solutions[[3]][2], nRegime)), c(rep(Solutions[[3]][3], nRegime)))
@@ -48,13 +49,13 @@ getSummaryTable <- function(folder, dat.type, se){
     OUMA <- c(t(Solutions[[5]]))
     OUMV <- c(t(Solutions[[6]]))
     OUMVA <- c(t(Solutions[[7]]))
-    ResTable[,1] <- AICcs
+    ResTable[,1] <- unlist(lapply(obj_i, function(x) x$AICc))
     ResTable[,2] <- AICcWt
     ResTable[,3:((nRegime * 3) + 2)] <- rbind(BM1, BMS, OU1, OUM, OUMA, OUMV, OUMVA)
     ResTables[[count]] <- ResTable
     count <- count + 1
   }
-  cat("\nDone.\n")
+  names(ResTables) <- corModels[ErrIndex]
   return(ResTables)
 }
 
@@ -86,19 +87,41 @@ getFigureTable <- function(SumTable, param){
   return(FigureTable)
 }
 
+# quick tip averging function
+averageTipStatePars <- function(pars, tip.states, biota){
+  Alpha <- colSums(t(tip.states) * pars[grep("Alpha", names(pars))])
+  Sigma <- colSums(t(tip.states) * pars[grep("Sigma", names(pars))])
+  Optim <- colSums(t(tip.states) * pars[grep("Optim", names(pars))])
+  out <- data.frame("ObsState" = biota, Alpha = Alpha, Sigma = Sigma, Optim = Optim, row.names = rownames(tip.states))
+  return(out)
+}
+
+
 # get model averaged tip rates
 getTipRates <- function(cor_file, AvgParams){
   load(cor_file)
-  pars <- matrix(AvgParams, 4, 3, dimnames = list(c("1A", "2A", "1B", "2B"), c("Alpha", "Sigma", "Optim")))
-  out <- matrix(NA, dim(res$tip.states)[1], 4, dimnames = list(rownames(res$tip.states), c("ObsSt", "Alpha", "Sigma", "Optim")))
-  out <- as.data.frame(out)
-  for(i in 1:dim(res$tip.states)[1]){
-    sp_i <- rownames(res$tip.states)[i]
-    out[i,1] <- res$data[i, 2]
-    out[i,2] <- sum(res$tip.states[i,] * pars[,1])
-    out[i,3] <- sum(res$tip.states[i,] * pars[,2])
-    out[i,4] <- sum(res$tip.states[i,] * pars[,3])
+  corNames <- names(obj)
+  AICcs <- unlist(lapply(obj, function(x) x$AICc))
+  AICcs <- AICcs + abs(min(AICcs))
+  dAICcs <- AICcs - min(AICcs)
+  AICcWt <- exp(-0.5 * dAICcs)/sum(exp(-0.5 * dAICcs))
+  Index <- vector("numeric", length = length(AvgParams))
+  for(i in 1:length(corNames)){
+    ind_i <- grepl(corNames[i], names(AvgParams)) & (nchar(names(AvgParams)) < nchar(corNames[i])+3)
+    Index[ind_i] <- i
   }
+  tmp <- vector("list", length(AvgParams))
+  for(i in 1:length(AvgParams)){
+    tip.states_i <- obj[[Index[i]]]$tip.states
+    biota_i <- obj[[Index[i]]]$data[,2]
+    pars_i <- AvgParams[[i]]
+    tmp[[i]] <- averageTipStatePars(pars_i, tip.states_i, biota_i)
+  }
+
+  Alpha <- rowMeans(do.call(cbind, lapply(tmp, function(x) x[,2])))
+  Sigma <- rowMeans(do.call(cbind, lapply(tmp, function(x) x[,3])))
+  Optim <- rowMeans(do.call(cbind, lapply(tmp, function(x) x[,4])))
+  out <- data.frame(ObsSt = tmp[[1]][,1], Alpha = Alpha, Sigma = Sigma, Optim = Optim, row.names = rownames(tmp[[1]]))
   return(out)
 }
 
@@ -115,12 +138,12 @@ wd <- "~/2021_SeedDispersal"
 # wd <- getwd()
 setwd(wd)
 Folders <- paste0(wd, "/res_ouwie/", dir("res_ouwie/"))
-cor_folder <- paste0(wd, "/recon_corhmm/", dir("recon_corhmm/"))
+cor_folder <- paste0(wd, "/res_corhmm/", dir("res_corhmm/"))
 dat.types <- c("temp", "prec")
 params <- c("Alpha", "Sigma", "Optim")
 
 # param <- params[3]
-ou_folder <- Folders[4]
+ou_folder <- Folders[1]
 clade <- strsplit(ou_folder, "/")[[1]][length(strsplit(ou_folder, "/")[[1]])]
 cor_file <- cor_folder[grep(clade, cor_folder)]
 se <- TRUE
@@ -130,12 +153,18 @@ count <- 1
 nPlots <- length(dat.types) * length(params)
 plots <- vector("list", nPlots)
 
+
+#### REMEMBER TO SET YLIMTS - these limits are misleading
 for(j in 1:length(dat.types)){
   dat.type <- dat.types[j]
+  # extract the results of the OU models
   SumTable <- getSummaryTable(ou_folder, dat.type, se)
-  AvgParams <- colMeans(do.call(rbind, lapply(SumTable, summarizeTable)))
-  AvgAICcWt <- colMeans(do.call(rbind, lapply(SumTable, function(x) x[,2])))
+  # model average the OU models
+  AvgParams <- lapply(SumTable, summarizeTable)
+  # do tip averaging to get it in terms of biotic and abiotic
   tab <- getTipRates(cor_file, AvgParams)
+  
+  AvgAICcWt <- colMeans(do.call(rbind, lapply(SumTable, function(x) x[,2])))
   for(i in 1:3){
     tab_i<- tab[,c(1, i+1)]
     colnames(tab_i)[2] <- "Val"
@@ -148,6 +177,7 @@ for(j in 1:length(dat.types)){
       scale_fill_manual(values=cols) + 
       theme(text = element_text(size = 20)) + 
       ggtitle((clade)) + 
+      ylim(0, 10) + 
       geom_boxplot()
     count <- count + 1
   }
@@ -160,7 +190,29 @@ grid.arrange(plots[[1]], plots[[2]], plots[[3]],
              nrow=2, ncol=3)
 dev.off()
 
+# plot the phylogeny figure
+load(cor_file)
+Tmax <- max(branching.times(res$phy))
+phy <- ladderize(res$phy)
+cols <- viridis(2)[ifelse(res$data[,2] == "Abiotic", 1, 2)]
+Xadd <- (0.1 * Tmax)
+plot(phy, show.tip.label = FALSE, type = "fan")
+# tiplabels(pch = 16, col = cols, cex = 0.5, offset = 4)
+offset = 5
+offset <- offset * tab$Optim/max(tab$Optim)
+lastPP <- get("last_plot.phylo", envir = .PlotPhyloEnv)
+tip <- 1:lastPP$Ntip
+XX <- lastPP$xx[tip]
+YY <- lastPP$yy[tip]
+tmp <- rect2polar(XX, YY)
+tmp.init <- polar2rect(tmp$r + 0, tmp$angle)
+tmp.final <- polar2rect(tmp$r + offset, tmp$angle)
+XX.init <- tmp.init$x
+YY.init <- tmp.init$y
+XX.final <- tmp.final$x
+YY.final <- tmp.final$y
+segments(x0 = XX.init, y0 = YY.init, x1 = XX.final, YY.final, col = cols)
 
-
-
+# points(x = XX.init, y = YY.init, pch = 16, col = cols)
+# points(x = XX.final, y = YY.final, pch = 16, col = cols)
 

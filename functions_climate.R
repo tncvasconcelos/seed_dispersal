@@ -437,3 +437,64 @@ GetClimateSummStats_seed_dispersal <- function (points) {
   }
   return(allclimatevars)
 }
+
+
+GetClimateSummStats_seed_dispersal <- function (points, type=c("raw","transformed")) {
+  tmp_points <- points[,-which(colnames(points) %in% c("lon","lat"))]
+  vars <- c("bio1","bio12")
+  allclimatevars <- list()
+  spp <- unique(tmp_points$species)
+  for(var_index in 1:length(vars)) {
+    cat("\r",vars[var_index])
+    cat("","\n")
+    n_i <- c()
+    sigma2_wi <- c()
+    summ_stats <- matrix(nrow=length(spp), ncol=5)
+    for(species_index in 1:length(spp)){
+      sp1 <- tmp_points[tmp_points$species==spp[species_index],]
+      cat("\r","Now doing species", species_index)
+      cat("","\n")
+      values <- sp1[,vars[var_index]]
+      values <- values[!is.na(values)]
+      if(type=="raw") {
+       if(vars[var_index] %in% c("bio1")) {
+          values <-  (values / 10) 
+        }
+      n_i[species_index] <- length(values) # sample size
+      sigma2_wi[species_index] <- ifelse(is.na(var(values)),0,var(values))  # sample variance
+      
+       if(any(values== -Inf)){
+          values <- values[-which(values== -Inf)]
+        }
+      }
+      if(type=="transformed") {
+        if(vars[var_index] %in% c("bio1")) {
+          values <-  (values / 10) + 273.15 # transform to Kelvin
+        }
+        
+        values <- log(values) # log
+        n_i[species_index] <- length(values) # sample size
+        sigma2_wi[species_index] <- ifelse(is.na(var(values)),0,var(values))  # sample variance
+        
+        if(any(values== -Inf)){
+          values <- values[-which(values== -Inf)]
+        }
+      }
+      n0 <- length(values)
+      mean0 <- round(mean(values), 6)
+      sd0 <- round(stats::sd(values), 6)
+      se0 <- round(sd0/ sqrt(n0), 6)
+      tmp_summ_stats <- c(n0, mean0, sd0, se0)
+      summ_stats[species_index,] <- c(spp[species_index], tmp_summ_stats)
+      colnames(summ_stats) <- c("species",paste0("n_",vars[var_index]), paste0("mean_",vars[var_index]),
+                                paste0("sd_",vars[var_index]), paste0("se_",vars[var_index]))
+    }
+    sigma2_w <- sum(sigma2_wi*(n_i - 1)) / sum(n_i - 1)
+    within_sp_var <-  round(sigma2_w/n_i, 6)
+    summ_stats <- cbind(summ_stats, within_sp_var)
+    colnames(summ_stats)[6] <- paste0("within_sp_var_",vars[var_index])
+    allclimatevars[[var_index]] <- summ_stats
+  }
+  return(allclimatevars)
+}
+

@@ -118,7 +118,9 @@ for(family_index in 1:length(all_cleaned_points)) {
   thinned_points <- Thinning(all_cleaned_points[[family_index]], species="species", lat = "decimalLatitude", lon="decimalLongitude", n = 1)
   allpoints <- ClimateFromPoints(thinned_points, species="species",lon="lon", lat="lat", res=2.5)
   write.csv(allpoints, file=paste0(climate_data.dir, "/", names(all_cleaned_points)[family_index], "_allpoints.csv"))
-  summstats <- GetClimateSummStats_seed_dispersal(allpoints)
+  summstats <- GetClimateSummStats_seed_dispersal(allpoints, type="raw")
+  write.csv(summstats, file=paste0(climate_data.dir, "/", names(all_cleaned_points)[family_index], "_summstats_raw.csv"))
+  summstats <- GetClimateSummStats_seed_dispersal(allpoints, type="transformed")
   write.csv(summstats, file=paste0(climate_data.dir, "/", names(all_cleaned_points)[family_index], "_summstats.csv"))
 }
 

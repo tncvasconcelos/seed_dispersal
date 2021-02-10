@@ -39,9 +39,9 @@ getCSVs <- function(wd){
 
 getData <- function(csv){
   dat <- read.csv(csv)
-  dat.temp.se <- data.frame(sp = dat$species, reg = dat$Dispersal_mode, temp = dat$temp, se_temp = dat$se_temp)
+  dat.temp.se <- data.frame(sp = dat$species, reg = dat$Dispersal_mode, temp = dat$temp, se_temp = dat$within_sp_var_temp)
   dat.temp.se <- dat.temp.se[which(apply(dat.temp.se, 1, function(x) !any(is.na(x)))),]
-  dat.prec.se <- data.frame(sp = dat$species, reg = dat$Dispersal_mode, prec = dat$prec, se_prec = dat$se_prec)
+  dat.prec.se <- data.frame(sp = dat$species, reg = dat$Dispersal_mode, prec = dat$prec, se_prec = dat$within_sp_var_prec)
   dat.prec.se <- dat.prec.se[which(apply(dat.prec.se, 1, function(x) !any(is.na(x)))),]
   dat.temp <- data.frame(sp = dat$species, reg = dat$Dispersal_mode, temp = dat$temp)
   dat.temp <- dat.temp[which(apply(dat.temp, 1, function(x) !any(is.na(x)))),]
@@ -85,7 +85,7 @@ CSVs <- getCSVs(wd)
 # input params 
 ncores <- 40
 nmap <- 100
-iter <- 1
+iter <- 2
 # i = j = 1
 # k = 1
 # run the simmaps

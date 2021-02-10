@@ -142,53 +142,72 @@ cor_folder <- paste0(wd, "/res_corhmm/", dir("res_corhmm/"))
 dat.types <- c("temp", "prec")
 params <- c("Alpha", "Sigma", "Optim")
 
-# param <- params[3]
-ou_folder <- Folders[1]
-clade <- strsplit(ou_folder, "/")[[1]][length(strsplit(ou_folder, "/")[[1]])]
-cor_file <- cor_folder[grep(clade, cor_folder)]
-se <- TRUE
-
 # make plots for a given clade and standard error
-count <- 1
-nPlots <- length(dat.types) * length(params)
-plots <- vector("list", nPlots)
+se <- TRUE
+dat.type <- dat.types[2]
+file.name <- paste0(wd, "/figures/", dat.type, "-SE.", se, ".pdf")
 
-
-#### REMEMBER TO SET YLIMTS - these limits are misleading
-for(j in 1:length(dat.types)){
-  dat.type <- dat.types[j]
+res <- vector("list", length(Folders))
+for(k in 1:length(Folders)){
+  ou_folder <- Folders[k]
+  Clade <- strsplit(ou_folder, "/")[[1]][length(strsplit(ou_folder, "/")[[1]])]
+  cat("\nStarting", Clade, "...\n")
+  cor_file <- cor_folder[grep(clade, cor_folder)]
   # extract the results of the OU models
   SumTable <- getSummaryTable(ou_folder, dat.type, se)
   # model average the OU models
   AvgParams <- lapply(SumTable, summarizeTable)
   # do tip averaging to get it in terms of biotic and abiotic
   tab <- getTipRates(cor_file, AvgParams)
-  
   AvgAICcWt <- colMeans(do.call(rbind, lapply(SumTable, function(x) x[,2])))
-  for(i in 1:3){
-    tab_i<- tab[,c(1, i+1)]
-    colnames(tab_i)[2] <- "Val"
-    param <- colnames(tab)[i+1]
-    cols <- viridis(2)
-    plots[[count]] <- 
-      ggplot(tab_i, aes(x=ObsSt, y=Val)) + 
-      labs(x = dat.type, y = param) +
-      theme(axis.text = element_text(size = 11), legend.justification=c(0,0), legend.position=c(0,0.85)) +
-      scale_fill_manual(values=cols) + 
-      theme(text = element_text(size = 20)) + 
-      ggtitle((clade)) + 
-      ylim(0, 10) + 
-      geom_boxplot()
-    count <- count + 1
-  }
+  res[[k]] <- cbind(Clade, tab)
 }
 
-file.name <- paste0(wd, "/figures/", clade, "-SE=", se, ".pdf")
+res_table <- do.call(rbind, res)  
+res_table$Optim <- exp(res_table$Optim)
+if(dat.type == "temp"){
+  res_table$Optim <- res_table$Optim - 273
+  ylabC <- "Temp. Optima (\u00B0C)"
+  main <- paste0("Data: Temperature & SE: ", se)
+}else{
+  ylabC <- "Precip. Optima (mm)"
+  main <- paste0("Data: Precipitation & SE: ", se)
+}
+cols <- viridis(2)
+
 pdf(file = file.name, width = 12, height = 10)
+grid.arrange(
+  ggplot(res_table, aes(x=Clade, y=Alpha, fill = ObsSt)) + 
+    labs(x = "", y = "Alpha") +
+    scale_fill_manual(values=cols) + 
+    scale_colour_manual(values=cols) + 
+    theme(text = element_text(size = 20), plot.title = element_text(hjust = 0.5)) + 
+    ggtitle(main) +
+    geom_boxplot(),
+  
+  ggplot(res_table, aes(x=Clade, y=Sigma, fill = ObsSt)) + 
+    labs(x = "", y = "Sigma") +
+    scale_fill_manual(values=cols) + 
+    theme(text = element_text(size = 20)) + 
+    geom_boxplot(),
+  
+  ggplot(res_table, aes(x=Clade, y=Optim, fill = ObsSt)) + 
+    labs(x = "Clades", y = ylabC) +
+    scale_fill_manual(values=cols) + 
+    theme(text = element_text(size = 20)) + 
+    geom_boxplot(),
+  nrow=3, ncol=1
+)
+dev.off()
+
+
+
+
+
+
 grid.arrange(plots[[1]], plots[[2]], plots[[3]], 
              plots[[4]], plots[[5]], plots[[6]],
              nrow=2, ncol=3)
-dev.off()
 
 # plot the phylogeny figure
 load(cor_file)

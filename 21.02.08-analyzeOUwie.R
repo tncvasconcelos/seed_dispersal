@@ -24,6 +24,8 @@ getSummaryTable <- function(folder, dat.type, se){
   nMap <- length(ModelList[[1]])
   corModels <- names(ModelList[[1]])
   ErrMat <- matrix(unlist(lapply(ModelList, function(x) lapply(x, function(y) class(y) == "try-error"))), nMap, 7)
+  LikMat <- matrix(unlist(lapply(ModelList, function(x) lapply(x, function(y) try(y$loglik) > 1e7))), nMap, length(models))
+  ErrMat <- ErrMat | LikMat
   ErrIndex <- which(!apply(ErrMat, 1, any))
   cat(nMap - length(ErrIndex), "models resulted in try-errors.\n")
   ResTables <- list()
@@ -41,7 +43,6 @@ getSummaryTable <- function(folder, dat.type, se){
     dAICcs <- AICcs - min(AICcs)
     AICcWt <- exp(-0.5 * dAICcs)/sum(exp(-0.5 * dAICcs))
     Solutions <- lapply(obj_i, function(x) x$solution)
-    
     BM1 <- c(rep(Solutions[[1]][1], nRegime), c(rep(Solutions[[1]][2], nRegime)), c(rep(Solutions[[1]][3], nRegime)))
     BMS <- c(t(Solutions[[2]]))
     OU1 <- c(rep(Solutions[[3]][1], nRegime), c(rep(Solutions[[3]][2], nRegime)), c(rep(Solutions[[3]][3], nRegime)))
@@ -144,7 +145,7 @@ params <- c("Alpha", "Sigma", "Optim")
 
 # make plots for a given clade and standard error
 se <- TRUE
-dat.type <- dat.types[2]
+dat.type <- dat.types[1]
 file.name <- paste0(wd, "/figures/", dat.type, "-SE.", se, ".pdf")
 
 res <- vector("list", length(Folders))

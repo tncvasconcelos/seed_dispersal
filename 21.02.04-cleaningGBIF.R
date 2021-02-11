@@ -53,16 +53,16 @@ point_files <- point_files[!grepl("cleaned", point_files)]
 points <- lapply(paste0(points.dir, "/", point_files), fread,quote="")
 names(points) <- unlist(lapply(strsplit(point_files, "_"), "[[", 1))
 
-all_cleaned_points <- list()
-{; for(family_index in 1:length(points)) {
+{; all_cleaned_points <- list()
+for(family_index in 1:length(points)) {
   cleaned_points <- points[[family_index]][-which(points[[family_index]]$species==""),]
   cleaned_points <- RemoveNoDecimal(cleaned_points, lon="decimalLongitude", lat="decimalLatitude")
   cleaned_points <- RemoveCentroids(cleaned_points, lon="decimalLongitude", lat="decimalLatitude")
   cleaned_points <- RemoveDuplicates(cleaned_points, lon="decimalLongitude", lat="decimalLatitude")
   cleaned_points <- RemoveOutliers(cleaned_points, species="species", lon="decimalLongitude", lat="decimalLatitude")
   cleaned_points <- RemoveSeaPoints(cleaned_points, lon="decimalLongitude", lat="decimalLatitude")
-  cleaned_points <- RemoveWrongCountries(cleaned_points, lon="decimalLongitude", lat="decimalLatitude")
-  cleaned_points <- RemoveHerbariaLocalities(cleaned_points, lon="decimalLongitude", lat="decimalLatitude")
+  cleaned_points <- RemoveWrongCountries(cleaned_points, lon="decimalLongitude", lat="decimalLatitude", wrld_simpl=wrld_simpl)
+  #cleaned_points <- RemoveHerbariaLocalities(cleaned_points, lon="decimalLongitude", lat="decimalLatitude")
   cleaned_points <- RemoveZeros(cleaned_points, lon="decimalLongitude", lat="decimalLatitude")
   species_to_remove <- UnusualDistributions(cleaned_points, lon="decimalLongitude", lat="decimalLatitude")
   if(length(species_to_remove) > 0) {
@@ -119,7 +119,6 @@ climate_layers.dir <- "./climate_layers"
     write.csv(summstats, file=paste0(climate_data.dir, "/", names(all_cleaned_points)[family_index], "_summstats.csv"))
   }
 beepr::beep("fanfare"); } 
-
 
 #-------------------------------
 # Getting organized table for OUwie

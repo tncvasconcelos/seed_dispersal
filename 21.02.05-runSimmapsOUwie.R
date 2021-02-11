@@ -41,16 +41,32 @@ getData <- function(csv){
   dat <- read.csv(csv)
   dat.temp.se <- data.frame(sp = dat$species, reg = dat$Dispersal_mode, temp = dat$temp, se_temp = dat$within_sp_var_temp)
   dat.temp.se <- dat.temp.se[which(apply(dat.temp.se, 1, function(x) !any(is.na(x)))),]
-  dat.prec.se <- data.frame(sp = dat$species, reg = dat$Dispersal_mode, prec = dat$prec, se_prec = dat$within_sp_var_prec)
-  dat.prec.se <- dat.prec.se[which(apply(dat.prec.se, 1, function(x) !any(is.na(x)))),]
   dat.temp <- data.frame(sp = dat$species, reg = dat$Dispersal_mode, temp = dat$temp)
   dat.temp <- dat.temp[which(apply(dat.temp, 1, function(x) !any(is.na(x)))),]
+  
+  dat.prec.se <- data.frame(sp = dat$species, reg = dat$Dispersal_mode, prec = dat$prec, se_prec = dat$within_sp_var_prec)
+  dat.prec.se <- dat.prec.se[which(apply(dat.prec.se, 1, function(x) !any(is.na(x)))),]
   dat.prec <- data.frame(sp = dat$species, reg = dat$Dispersal_mode, prec = dat$prec)
   dat.prec <- dat.prec[which(apply(dat.prec, 1, function(x) !any(is.na(x)))),]
-  return(list(dat.temp.se = dat.temp.se,
+  
+  dat.pet.se <- data.frame(sp = dat$species, reg = dat$Dispersal_mode, pet = dat$mean_pet, se_pet = dat$within_sp_var_pet)
+  dat.pet.se <- dat.pet.se[which(apply(dat.pet.se, 1, function(x) !any(is.na(x)))),]
+  dat.pet <- data.frame(sp = dat$species, reg = dat$Dispersal_mode, pet = dat$mean_pet)
+  dat.pet <- dat.pet[which(apply(dat.pet, 1, function(x) !any(is.na(x)))),]
+  
+  dat.arid.se <- data.frame(sp = dat$species, reg = dat$Dispersal_mode, arid = dat$mean_aridity, se_temp = dat$within_sp_var_aridity)
+  dat.arid.se <- dat.arid.se[which(apply(dat.arid.se, 1, function(x) !any(is.na(x)))),]
+  dat.arid <- data.frame(sp = dat$species, reg = dat$Dispersal_mode, arid = dat$mean_aridity)
+  dat.arid <- dat.arid[which(apply(dat.arid, 1, function(x) !any(is.na(x)))),]
+  return(list(dat.temp = dat.temp,
+              dat.temp.se = dat.temp.se,
+              dat.prec = dat.prec,
               dat.prec.se = dat.prec.se,
-              dat.temp = dat.temp,
-              dat.prec = dat.prec))
+              dat.pet = dat.pet,
+              dat.pet.se = dat.pet.se,
+              dat.arid = dat.arid,
+              dat.arid.se = dat.arid.se
+              ))
 }
 
 organizeDat <- function(dat, simmap){
@@ -63,7 +79,7 @@ organizeDat <- function(dat, simmap){
 
 singleRun <- function(dat, simmap, model, mserr){
   data <- organizeDat(dat, simmap)
-  obj <- try(OUwie(simmap, data, model, simmap.tree = TRUE, algorithm = "three.point", scaleHeight = TRUE, mserr = mserr, ub = 10))
+  obj <- try(OUwie(simmap, data, model, simmap.tree = TRUE, algorithm = "three.point", scaleHeight = FALSE, mserr = mserr, ub = 10))
   return(obj)
 }
 
@@ -83,9 +99,9 @@ labels <- unlist(lapply(strsplit(dir("res_corhmm/"), "-"), function(x) x[1]))
 CSVs <- getCSVs(wd)
 
 # input params 
-ncores <- 40
+ncores <- 50
 nmap <- 100
-iter <- 2
+iter <- 1
 # i = j = 1
 # k = 1
 # run the simmaps

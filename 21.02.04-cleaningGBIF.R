@@ -145,7 +145,7 @@ names(traits) <- labels
   group_summstats$species <- sub(" ","_", group_summstats$species)
   merged_table <- merge(group_summstats, group_traits, by.x="species", by.y="Species")
   cleaned_table <- merged_table[,c("species","mean_temp","se_temp","within_sp_var_temp","mean_prec","se_prec","within_sp_var_prec",
-                                   "mean_pet","se_pet","within_sp_var_pet","mean_aridity","se_aridity", "within_sp_var_aridity","Dispersal_mode")]
+                                   "mean_pet","se_pet","within_sp_var_pet","mean_aridity","se_aridity", "within_sp_var_aridity","Fruit_type")]
 
   if(any(is.na(cleaned_table$mean_prec))) { 
     cleaned_table <- cleaned_table[-which(is.na(cleaned_table$mean_prec)),]

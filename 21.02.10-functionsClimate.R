@@ -439,9 +439,9 @@ GetClimateSummStats_seed_dispersal <- function (points) {
 }
 
 
-GetClimateSummStats_seed_dispersal <- function (points, type=c("raw","transformed")) {
+GetClimateSummStats_custom <- function (points, type=c("raw","transformed")) {
   tmp_points <- points[,-which(colnames(points) %in% c("lon","lat"))]
-  vars <- c("bio1","bio12", "pet", "aridity")
+  vars <- c("temp","prec", "pet", "aridity")
   allclimatevars <- list()
   spp <- unique(tmp_points$species)
   for(var_index in 1:length(vars)) {
@@ -457,7 +457,7 @@ GetClimateSummStats_seed_dispersal <- function (points, type=c("raw","transforme
       values <- sp1[,vars[var_index]]
       values <- values[!is.na(values)]
       if(type=="raw") {
-       if(vars[var_index] %in% c("bio1")) {
+       if(vars[var_index] %in% c("temp")) {
           values <-  (values / 10) 
         }
       n_i[species_index] <- length(values) # sample size
@@ -465,7 +465,7 @@ GetClimateSummStats_seed_dispersal <- function (points, type=c("raw","transforme
       
       }
       if(type=="transformed") {
-        if(vars[var_index] %in% c("bio1")) {
+        if(vars[var_index] %in% c("temp")) {
           values <-  (values / 10) + 273.15 # transform to Kelvin
         }
         
@@ -497,19 +497,21 @@ GetClimateSummStats_seed_dispersal <- function (points, type=c("raw","transforme
 
 
 
-AiPetFromPoint <- function(points, species="species",lon="lon", lat="lat", layerdir = ""){
+ClimateFromPoint_custom <- function(points, species="species",lon="lon", lat="lat", layerdir = ""){
   tmp_points = points
   colnames(tmp_points)[which(colnames(tmp_points) == lon)] <- "lon"
   colnames(tmp_points)[which(colnames(tmp_points) == lat)] <- "lat"
   colnames(tmp_points)[which(colnames(tmp_points) == species)] <- "species"
   tmp_points <- tmp_points[,c("species","lat","lon")]
-
+  
+  temp <- raster::raster(paste0(layerdir, "/current_30sec/bio_1.tif"))
+  prec <- raster::raster(paste0(layerdir, "/current_30sec/bio_12.tif"))
   pet <- raster::raster(paste0(layerdir, "/et0_yr/et0_yr.tif"))
   aridity <- raster::raster(paste0(layerdir, "/ai_et0/ai_et0.tif"))
-  bio <- raster::addLayer(pet, aridity)
-
-  vars <- c(pet, aridity)
-  names(vars) <- c("pet", "aridity") 
+  
+  bio <- list(temp, prec, pet, aridity)
+  vars <- c(temp, prec, pet, aridity)
+  names(vars) <- c("temp", "prec", "pet", "aridity")
   final_matrix <- matrix(nrow=nrow(tmp_points), ncol=length(vars))
 
   cat("Extracting climatic information of", nrow(tmp_points), "points",  "\n")
@@ -523,7 +525,7 @@ AiPetFromPoint <- function(points, species="species",lon="lon", lat="lat", layer
   }
   colnames(final_matrix) <- names(vars)
   result <- cbind(tmp_points, final_matrix)
-  return(as.data.frame(result)[,-1])
+  return(as.data.frame(result))
 }
 
 

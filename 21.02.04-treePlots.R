@@ -1,6 +1,7 @@
 # Checking distribution of seed dispersal mode on trees
 # rm(list=ls())
 library(ape)
+library(phytools)
 setwd("~/Desktop/climate_niche_seed_dispersal/seed_dispersal")
 #setwd("~/2021_SeedDispersal/")
 
@@ -29,7 +30,7 @@ summstats <- lapply(paste0(climate_data.dir, "/", summstats_files), read.csv)
 names(summstats) <- unlist(lapply(strsplit(summstats_files, "_"), "[[", 1))
 
 # Tree plots
-for(group_index in 1:length(labels)) {
+for(group_index in 1:length(trees)) {
   group <- names(traits)[group_index]
   group_traits <- traits[[group]][,1:2]
   group_tree <- trees[[grep(group, names(trees))]]
@@ -62,7 +63,7 @@ for(group_index in 1:length(labels)) {
 
 
 # Tree plots with climatic data
-for(group_index in 1:length(niches)) {
+for(group_index in 1:length(trees)) {
   # Getting individual data for each group
   group <- names(niches)[group_index]
   group_tree <- trees[[grep(group, names(trees))]]
@@ -80,18 +81,18 @@ for(group_index in 1:length(niches)) {
   # The vector has to be in the reverse order to match the tips when ploting
   se_temp <- rev(as.numeric(cleaned_table$se_temp))
   se_temp[which(is.na(se_temp))] <- 0
-  temp <- rev(as.numeric(cleaned_table$temp))
+  temp <- rev(as.numeric(cleaned_table$mean_temp))
   se_prec <- rev(as.numeric(cleaned_table$se_prec))
   se_prec[which(is.na(se_prec))] <- 0
-  prec <- rev(as.numeric(cleaned_table$prec))
-  
+  prec <- rev(as.numeric(cleaned_table$mean_prec))
+
   # Setting dispersal mode for plot
-  mode <- rev(cleaned_table$Dispersal_mode)
+  mode <- rev(cleaned_table$Fruit_type)
   names(mode) <- rev(cleaned_table$species)
   colors_states <- c("midnightblue", "goldenrod")
   mode_cols <- mode
-  mode_cols[mode_cols=="Biotic"] <- "goldenrod"
-  mode_cols[mode_cols=="Abiotic"] <- "midnightblue"
+  mode_cols[mode_cols=="Fleshy"] <- "goldenrod"
+  mode_cols[mode_cols=="Dry"] <- "midnightblue"
   mode_cols <- mode_cols[match(names(mode_cols),tree_pruned$tip.label)]
 
   if(group %in% c("Melastomataceae")) { # still no idea why Melas doesn't plot right at first

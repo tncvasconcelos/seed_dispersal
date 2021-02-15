@@ -24,7 +24,7 @@ getSummaryTable <- function(folder, dat.type, se){
   nMap <- length(ModelList[[1]])
   corModels <- names(ModelList[[1]])
   ErrMat <- matrix(unlist(lapply(ModelList, function(x) lapply(x, function(y) class(y) == "try-error"))), nMap, 7)
-  LikMat <- matrix(unlist(lapply(ModelList, function(x) lapply(x, function(y) try(y$loglik) > 1e7))), nMap, length(models))
+  LikMat <- matrix(unlist(lapply(ModelList, function(x) lapply(x, function(y) try(y$loglik, silent = TRUE) > 1e7))), nMap, length(models))
   ErrMat <- ErrMat | LikMat
   ErrIndex <- which(!apply(ErrMat, 1, any))
   cat(nMap - length(ErrIndex), "models resulted in try-errors.\n")
@@ -130,9 +130,6 @@ getTipRates <- function(cor_file, AvgParams){
 ## imports
 require(corHMM)
 require(OUwie)
-require(viridis)
-require(ggplot2)
-require(gridExtra)
 
 ## run
 wd <- "~/2021_SeedDispersal"
@@ -140,20 +137,21 @@ wd <- "~/2021_SeedDispersal"
 setwd(wd)
 Folders <- paste0(wd, "/res_ouwie/", dir("res_ouwie/"))
 cor_folder <- paste0(wd, "/res_corhmm/", dir("res_corhmm/"))
-dat.types <- c("temp", "prec")
+dat.types <- c("temp", "prec", "pet", "arid")
 params <- c("Alpha", "Sigma", "Optim")
 
 # make plots for a given clade and standard error
-se <- TRUE
-dat.type <- dat.types[1]
-file.name <- paste0(wd, "/figures/", dat.type, "-SE.", se, ".pdf")
+se <- FALSE
+dat.type <- dat.types[4]
+# file.name <- paste0(wd, "/figures/", dat.type, "-SE.", se, ".pdf")
+file.name <- paste0(wd, "/tables/", dat.type, "-SE.", se, ".csv")
 
 res <- vector("list", length(Folders))
 for(k in 1:length(Folders)){
   ou_folder <- Folders[k]
   Clade <- strsplit(ou_folder, "/")[[1]][length(strsplit(ou_folder, "/")[[1]])]
   cat("\nStarting", Clade, "...\n")
-  cor_file <- cor_folder[grep(clade, cor_folder)]
+  cor_file <- cor_folder[grep(Clade, cor_folder)]
   # extract the results of the OU models
   SumTable <- getSummaryTable(ou_folder, dat.type, se)
   # model average the OU models
@@ -165,74 +163,5 @@ for(k in 1:length(Folders)){
 }
 
 res_table <- do.call(rbind, res)  
-res_table$Optim <- exp(res_table$Optim)
-if(dat.type == "temp"){
-  res_table$Optim <- res_table$Optim - 273
-  ylabC <- "Temp. Optima (\u00B0C)"
-  main <- paste0("Data: Temperature & SE: ", se)
-}else{
-  ylabC <- "Precip. Optima (mm)"
-  main <- paste0("Data: Precipitation & SE: ", se)
-}
-cols <- viridis(2)
-
-pdf(file = file.name, width = 12, height = 10)
-grid.arrange(
-  ggplot(res_table, aes(x=Clade, y=Alpha, fill = ObsSt)) + 
-    labs(x = "", y = "Alpha") +
-    scale_fill_manual(values=cols) + 
-    scale_colour_manual(values=cols) + 
-    theme(text = element_text(size = 20), plot.title = element_text(hjust = 0.5)) + 
-    ggtitle(main) +
-    geom_boxplot(),
-  
-  ggplot(res_table, aes(x=Clade, y=Sigma, fill = ObsSt)) + 
-    labs(x = "", y = "Sigma") +
-    scale_fill_manual(values=cols) + 
-    theme(text = element_text(size = 20)) + 
-    geom_boxplot(),
-  
-  ggplot(res_table, aes(x=Clade, y=Optim, fill = ObsSt)) + 
-    labs(x = "Clades", y = ylabC) +
-    scale_fill_manual(values=cols) + 
-    theme(text = element_text(size = 20)) + 
-    geom_boxplot(),
-  nrow=3, ncol=1
-)
-dev.off()
-
-
-
-
-
-
-grid.arrange(plots[[1]], plots[[2]], plots[[3]], 
-             plots[[4]], plots[[5]], plots[[6]],
-             nrow=2, ncol=3)
-
-# plot the phylogeny figure
-load(cor_file)
-Tmax <- max(branching.times(res$phy))
-phy <- ladderize(res$phy)
-cols <- viridis(2)[ifelse(res$data[,2] == "Abiotic", 1, 2)]
-Xadd <- (0.1 * Tmax)
-plot(phy, show.tip.label = FALSE, type = "fan")
-# tiplabels(pch = 16, col = cols, cex = 0.5, offset = 4)
-offset = 5
-offset <- offset * tab$Optim/max(tab$Optim)
-lastPP <- get("last_plot.phylo", envir = .PlotPhyloEnv)
-tip <- 1:lastPP$Ntip
-XX <- lastPP$xx[tip]
-YY <- lastPP$yy[tip]
-tmp <- rect2polar(XX, YY)
-tmp.init <- polar2rect(tmp$r + 0, tmp$angle)
-tmp.final <- polar2rect(tmp$r + offset, tmp$angle)
-XX.init <- tmp.init$x
-YY.init <- tmp.init$y
-XX.final <- tmp.final$x
-YY.final <- tmp.final$y
-segments(x0 = XX.init, y0 = YY.init, x1 = XX.final, YY.final, col = cols)
-
-# points(x = XX.init, y = YY.init, pch = 16, col = cols)
-# points(x = XX.final, y = YY.final, pch = 16, col = cols)
+write.csv(res_table, file.name)
 

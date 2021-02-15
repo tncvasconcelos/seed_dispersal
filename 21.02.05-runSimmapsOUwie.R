@@ -39,24 +39,24 @@ getCSVs <- function(wd){
 
 getData <- function(csv){
   dat <- read.csv(csv)
-  dat.temp.se <- data.frame(sp = dat$species, reg = dat$Dispersal_mode, temp = dat$temp, se_temp = dat$within_sp_var_temp)
+  dat.temp.se <- data.frame(sp = dat$species, reg = dat$Fruit_type, temp = dat$mean_temp, se_temp = dat$within_sp_var_temp)
   dat.temp.se <- dat.temp.se[which(apply(dat.temp.se, 1, function(x) !any(is.na(x)))),]
-  dat.temp <- data.frame(sp = dat$species, reg = dat$Dispersal_mode, temp = dat$temp)
+  dat.temp <- data.frame(sp = dat$species, reg = dat$Fruit_type, temp = dat$mean_temp)
   dat.temp <- dat.temp[which(apply(dat.temp, 1, function(x) !any(is.na(x)))),]
   
-  dat.prec.se <- data.frame(sp = dat$species, reg = dat$Dispersal_mode, prec = dat$prec, se_prec = dat$within_sp_var_prec)
+  dat.prec.se <- data.frame(sp = dat$species, reg = dat$Fruit_type, prec = dat$mean_prec, se_prec = dat$within_sp_var_prec)
   dat.prec.se <- dat.prec.se[which(apply(dat.prec.se, 1, function(x) !any(is.na(x)))),]
-  dat.prec <- data.frame(sp = dat$species, reg = dat$Dispersal_mode, prec = dat$prec)
+  dat.prec <- data.frame(sp = dat$species, reg = dat$Fruit_type, prec = dat$mean_prec)
   dat.prec <- dat.prec[which(apply(dat.prec, 1, function(x) !any(is.na(x)))),]
   
-  dat.pet.se <- data.frame(sp = dat$species, reg = dat$Dispersal_mode, pet = dat$mean_pet, se_pet = dat$within_sp_var_pet)
+  dat.pet.se <- data.frame(sp = dat$species, reg = dat$Fruit_type, pet = dat$mean_pet, se_pet = dat$within_sp_var_pet)
   dat.pet.se <- dat.pet.se[which(apply(dat.pet.se, 1, function(x) !any(is.na(x)))),]
-  dat.pet <- data.frame(sp = dat$species, reg = dat$Dispersal_mode, pet = dat$mean_pet)
+  dat.pet <- data.frame(sp = dat$species, reg = dat$Fruit_type, pet = dat$mean_pet)
   dat.pet <- dat.pet[which(apply(dat.pet, 1, function(x) !any(is.na(x)))),]
   
-  dat.arid.se <- data.frame(sp = dat$species, reg = dat$Dispersal_mode, arid = dat$mean_aridity, se_temp = dat$within_sp_var_aridity)
+  dat.arid.se <- data.frame(sp = dat$species, reg = dat$Fruit_type, arid = dat$mean_aridity, se_temp = dat$within_sp_var_aridity)
   dat.arid.se <- dat.arid.se[which(apply(dat.arid.se, 1, function(x) !any(is.na(x)))),]
-  dat.arid <- data.frame(sp = dat$species, reg = dat$Dispersal_mode, arid = dat$mean_aridity)
+  dat.arid <- data.frame(sp = dat$species, reg = dat$Fruit_type, arid = dat$mean_aridity)
   dat.arid <- dat.arid[which(apply(dat.arid, 1, function(x) !any(is.na(x)))),]
   return(list(dat.temp = dat.temp,
               dat.temp.se = dat.temp.se,
@@ -99,34 +99,37 @@ labels <- unlist(lapply(strsplit(dir("res_corhmm/"), "-"), function(x) x[1]))
 CSVs <- getCSVs(wd)
 
 # input params 
-ncores <- 50
+ncores <- 40
 nmap <- 100
-iter <- 1
-# i = j = 1
-# k = 1
-# run the simmaps
-for(i in 1:length(CSVs)){
-  csv <- CSVs[i]
-  data <- getData(csv)
-  # for j in each trait dataset
-  for(j in 1:length(data)){
-    file.name <- paste0(wd, "/simmaps/", labels[i], "-", names(data)[j], "-", format(Sys.time(), "%y_%m_%d"), "-simmap-", iter, ".Rsave")
-    simmaps <- getSimmaps(file = Rsaves[i], dat = data[[j]], save.file = file.name, nMap = nmap)
-    if(dim(data[[j]])[2] == 4){
-      mserr = "known"
-    }else{
-      mserr = "none"
-    }
-    models <- c("BM1", "BMS", "OU1", "OUM", "OUMA", "OUMV", "OUMVA")
-    for(k in 1:length(models)){
-      obj <- mclapply(simmaps, function(x) singleRun(data[[j]], x, models[k], mserr), mc.cores = ncores)
-      # save the modeling results of a dataset
-      file.name <- paste0(wd, "/res_ouwie/", labels[i], "/", labels[i], "-", names(data)[j], "-", format(Sys.time(), "%y_%m_%d"), "-OURes-", models[k], "-", iter, ".Rsave")
-      save(obj, file = file.name)
-      obj <- NULL
+iter <- 2
+
+for(iter in 2:10){
+  for(i in 1:length(CSVs)){
+    csv <- CSVs[i]
+    data <- getData(csv)
+    # for j in each trait dataset
+    for(j in 1:length(data)){
+      file.name <- paste0(wd, "/simmaps/", labels[i], "-", names(data)[j], "-", format(Sys.time(), "%y_%m_%d"), "-simmap-", iter, ".Rsave")
+      simmaps <- getSimmaps(file = Rsaves[i], dat = data[[j]], save.file = file.name, nMap = nmap)
+      if(dim(data[[j]])[2] == 4){
+        mserr = "known"
+      }else{
+        mserr = "none"
+      }
+      models <- c("BM1", "BMS", "OU1", "OUM", "OUMA", "OUMV", "OUMVA")
+      for(k in 1:length(models)){
+        obj <- mclapply(simmaps, function(x) singleRun(data[[j]], x, models[k], mserr), mc.cores = ncores)
+        # save the modeling results of a dataset
+        file.name <- paste0(wd, "/res_ouwie/", labels[i], "/", labels[i], "-", names(data)[j], "-", format(Sys.time(), "%y_%m_%d"), "-OURes-", models[k], "-", iter, ".Rsave")
+        save(obj, file = file.name)
+        obj <- NULL
+      }
     }
   }
 }
+# i = j = 1
+# k = 1
+# run the simmaps
 
 
 

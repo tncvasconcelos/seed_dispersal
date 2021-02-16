@@ -39,9 +39,13 @@ recon_corhmm/ - model averaged ancestral state reconstructions save files genera
 
 # Citations for GBIF datasets:
 Apocynaceae: GBIF.org (15 February 2021) GBIF Occurrence Download https://doi.org/10.15468/dl.sbde8b 
+
 Ericaceae: GBIF.org (14 December 2020) GBIF Occurrence Download https://doi.org/10.15468/dl.a56dvd 
+
 Melastomataceae: GBIF.org (14 December 2020) GBIF Occurrence Download https://doi.org/10.15468/dl.nqcgsv 
+
 Rosaceae: GBIF.org (14 December 2020) GBIF Occurrence Download https://doi.org/10.15468/dl.67u798 
+
 Solanaceae: GBIF.org (14 December 2020) GBIF Occurrence Download https://doi.org/10.15468/dl.hphjbs 
  
 

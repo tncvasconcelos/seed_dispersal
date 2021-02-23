@@ -11,20 +11,24 @@ getSummaryTable <- function(folder, dat.type, se){
   }
   files <- paste0(folder, "/", Rsaves[grep(dat.type, Rsaves)])
   models <- c("-BM1-", "-BMS-", "-OU1-", "-OUM-", "-OUMA-", "-OUMV-", "-OUMVA-")
-  ModelList <- vector("list", length(files))
+  ModelList <- vector("list", length(models))
   names(ModelList) <- models
   count <- 1
   cat("Loading Models...\n")
   for(i in models){
     ToLoad <- files[grep(i, files)]
-    load(ToLoad)
-    ModelList[[count]] <- obj
+    obj_j <- list()
+    for(j in 1:length(ToLoad)){
+      load(ToLoad[j])
+      obj_j <- c(obj_j, obj)
+    }
+    ModelList[[count]] <- obj_j
     count <- count + 1
   }
   nMap <- length(ModelList[[1]])
   corModels <- names(ModelList[[1]])
   ErrMat <- matrix(unlist(lapply(ModelList, function(x) lapply(x, function(y) class(y) == "try-error"))), nMap, 7)
-  LikMat <- matrix(unlist(lapply(ModelList, function(x) lapply(x, function(y) try(y$loglik, silent = TRUE) > 1e7))), nMap, length(models))
+  LikMat <- matrix(unlist(lapply(ModelList, function(x) lapply(x, function(y) try(abs(y$loglik), silent = TRUE) > 1e5))), nMap, length(models))
   ErrMat <- ErrMat | LikMat
   ErrIndex <- which(!apply(ErrMat, 1, any))
   cat(nMap - length(ErrIndex), "models resulted in try-errors.\n")
@@ -142,26 +146,30 @@ params <- c("Alpha", "Sigma", "Optim")
 
 # make plots for a given clade and standard error
 se <- FALSE
-dat.type <- dat.types[4]
-# file.name <- paste0(wd, "/figures/", dat.type, "-SE.", se, ".pdf")
-file.name <- paste0(wd, "/tables/", dat.type, "-SE.", se, ".csv")
-
-res <- vector("list", length(Folders))
-for(k in 1:length(Folders)){
-  ou_folder <- Folders[k]
-  Clade <- strsplit(ou_folder, "/")[[1]][length(strsplit(ou_folder, "/")[[1]])]
-  cat("\nStarting", Clade, "...\n")
-  cor_file <- cor_folder[grep(Clade, cor_folder)]
-  # extract the results of the OU models
-  SumTable <- getSummaryTable(ou_folder, dat.type, se)
-  # model average the OU models
-  AvgParams <- lapply(SumTable, summarizeTable)
-  # do tip averaging to get it in terms of biotic and abiotic
-  tab <- getTipRates(cor_file, AvgParams)
-  AvgAICcWt <- colMeans(do.call(rbind, lapply(SumTable, function(x) x[,2])))
-  res[[k]] <- cbind(Clade, tab)
+for(se in c(TRUE, FALSE)){
+  for(i in 1:4){
+    dat.type <- dat.types[i]
+    # file.name <- paste0(wd, "/figures/", dat.type, "-SE.", se, ".pdf")
+    file.name <- paste0(wd, "/tables/", dat.type, "-SE.", se, ".csv")
+    print(file.name)
+    res <- vector("list", length(Folders))
+    for(k in 1:length(Folders)){
+      ou_folder <- Folders[k]
+      Clade <- strsplit(ou_folder, "/")[[1]][length(strsplit(ou_folder, "/")[[1]])]
+      cat("\nStarting", Clade, "...\n")
+      cor_file <- cor_folder[grep(Clade, cor_folder)]
+      # extract the results of the OU models
+      SumTable <- getSummaryTable(ou_folder, dat.type, se)
+      # model average the OU models
+      AvgParams <- lapply(SumTable, summarizeTable)
+      # do tip averaging to get it in terms of biotic and abiotic
+      tab <- getTipRates(cor_file, AvgParams)
+      AvgAICcWt <- colMeans(do.call(rbind, lapply(SumTable, function(x) x[,2])))
+      res[[k]] <- cbind(Clade, tab)
+    }
+  }
+  res_table <- do.call(rbind, res)  
+  write.csv(res_table, file.name)
 }
 
-res_table <- do.call(rbind, res)  
-write.csv(res_table, file.name)
 

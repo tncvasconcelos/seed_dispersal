@@ -60,25 +60,27 @@ for(i in 1:length(files)){
   
   pdf(file = file.name, width = 12, height = 10)
   grid.arrange(
-    ggplot(res_table, aes(x=Clade, y=Alpha, fill = ObsSt)) + 
-      labs(x = "", y = ylabA) +
+    # optima
+    ggplot(res_table, aes(x=Clade, y=Optim, fill = ObsSt)) + 
+      labs(x = "Clades", y = ylabC) +
       scale_fill_manual(values=cols) + 
-      scale_colour_manual(values=cols) + 
       theme(text = element_text(size = 20), plot.title = element_text(hjust = 0.5)) + 
       ggtitle(main) +
       geom_boxplot(),
-    
+    # sigma
     ggplot(res_table, aes(x=Clade, y=Sigma, fill = ObsSt)) + 
       labs(x = "", y = ylabB) +
       scale_fill_manual(values=cols) + 
       theme(text = element_text(size = 20)) + 
       geom_boxplot(),
-    
-    ggplot(res_table, aes(x=Clade, y=Optim, fill = ObsSt)) + 
-      labs(x = "Clades", y = ylabC) +
+    # half-life
+    ggplot(res_table, aes(x=Clade, y=Alpha, fill = ObsSt)) + 
+      labs(x = "", y = ylabA) +
       scale_fill_manual(values=cols) + 
+      scale_colour_manual(values=cols) + 
       theme(text = element_text(size = 20)) + 
       geom_boxplot(),
+
     nrow=3, ncol=1
   )
   dev.off()

@@ -144,10 +144,13 @@ cor_folder <- paste0(wd, "/res_corhmm/", dir("res_corhmm/"))
 dat.types <- c("temp", "prec", "pet", "arid")
 params <- c("Alpha", "Sigma", "Optim")
 
+Folders <- Folders[2:5]
+cor_folder <- cor_folder[2:5]
+
 # make plots for a given clade and standard error
 se <- FALSE
 for(se in c(TRUE, FALSE)){
-  for(i in 1:4){
+  for(i in 1:length(dat.types)){
     dat.type <- dat.types[i]
     # file.name <- paste0(wd, "/figures/", dat.type, "-SE.", se, ".pdf")
     file.name <- paste0(wd, "/tables/", dat.type, "-SE.", se, ".csv")

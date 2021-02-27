@@ -89,7 +89,6 @@ require(corHMM)
 require(parallel)
 
 ## run
-
 # file organization
 wd <- "~/2021_SeedDispersal"
 # wd <- getwd()
@@ -99,49 +98,63 @@ labels <- unlist(lapply(strsplit(dir("res_corhmm/"), "-"), function(x) x[1]))
 CSVs <- getCSVs(wd)
 
 # input params 
-ncores <- 40
+ncores <- 20
 nmap <- 100
-iter <- 2
+iter <- 1
 
-for(iter in 2:10){
-  for(i in 1:length(CSVs)){
-    csv <- CSVs[i]
-    data <- getData(csv)
-    # for j in each trait dataset
-    for(j in 1:length(data)){
-      file.name <- paste0(wd, "/simmaps/", labels[i], "-", names(data)[j], "-", format(Sys.time(), "%y_%m_%d"), "-simmap-", iter, ".Rsave")
-      simmaps <- getSimmaps(file = Rsaves[i], dat = data[[j]], save.file = file.name, nMap = nmap)
-      if(dim(data[[j]])[2] == 4){
-        mserr = "known"
-      }else{
-        mserr = "none"
-      }
-      models <- c("BM1", "BMS", "OU1", "OUM", "OUMA", "OUMV", "OUMVA")
-      for(k in 1:length(models)){
-        obj <- mclapply(simmaps, function(x) singleRun(data[[j]], x, models[k], mserr), mc.cores = ncores)
-        # save the modeling results of a dataset
-        file.name <- paste0(wd, "/res_ouwie/", labels[i], "/", labels[i], "-", names(data)[j], "-", format(Sys.time(), "%y_%m_%d"), "-OURes-", models[k], "-", iter, ".Rsave")
-        save(obj, file = file.name)
-        obj <- NULL
-      }
-    }
+for(iter in 1:10){
+  csv <- CSVs[1]
+  data <- getData(csv)
+  # for j in each trait dataset
+  j = 7 # only arid
+  file.name <- paste0(wd, "/simmaps/", labels[1], "-", names(data)[j], "-", format(Sys.time(), "%y_%m_%d"), "-simmap-", iter, ".Rsave")
+  simmaps <- getSimmaps(file = Rsaves[1], dat = data[[j]], save.file = file.name, nMap = nmap)
+  if(dim(data[[j]])[2] == 4){
+    mserr = "known"
+  }else{
+    mserr = "none"
+  }
+  models <- c("BM1", "BMS", "OU1", "OUM", "OUMA", "OUMV", "OUMVA")
+  for(k in 1:length(models)){
+      obj <- mclapply(simmaps, function(x) singleRun(data[[j]], x, models[k], mserr), mc.cores = ncores)
+      # save the modeling results of a dataset
+      file.name <- paste0(wd, "/res_ouwie/", labels[1], "/", labels[1], "-", names(data)[j], "-", format(Sys.time(), "%y_%m_%d"), "-OURes-", models[k], "-", iter, ".Rsave")
+      save(obj, file = file.name)
+      obj <- NULL
   }
 }
 # i = j = 1
 # k = 1
 # run the simmaps
 
+ncores <- 40
+nmap <- 100
+iter <- 1
 
 
-data <- organizeDat(data[[j]], simmaps[[1]])
-tmp <- data[,c(1,2,4)]
-obj <- obj[[1]]
-
-testA <- OUwie.boot(phy=simmaps[[1]], data=data, model=obj$model, nboot=2, alpha=obj$solution[1,], sigma.sq=obj$solution[2,], theta=obj$solution[3,], theta0=obj$theta[1,1], simmap.tree=FALSE, scaleHeight=TRUE, mserr="known", algorithm="three.point")
-
-testB <- OUwie.boot(phy=simmaps[[1]], data=data, model=obj$model, nboot=2, alpha=obj$solution[1,], sigma.sq=obj$solution[2,], theta=obj$solution[3,], theta0=obj$theta[1,1], simmap.tree=TRUE, scaleHeight=TRUE, mserr="known", algorithm="three.point")
-
-sim.data<-OUwie.sim(simmaps[[1]],tmp,simmap.tree=TRUE,scaleHeight=TRUE,alpha=obj$solution[1,], sigma.sq=obj$solution[2,], theta=obj$solution[3,], theta0=obj$theta[1,1], mserr="known")
+for(iter in 2:10){
+  csv <- CSVs[1]
+  data <- getData(csv)
+  i = 1
+  # for j in each trait dataset
+  for(j in 1:length(data)){
+    file.name <- paste0(wd, "/simmaps/", labels[i], "-", names(data)[j], "-", format(Sys.time(), "%y_%m_%d"), "-simmap-", iter, ".Rsave")
+    simmaps <- getSimmaps(file = Rsaves[i], dat = data[[j]], save.file = file.name, nMap = nmap)
+    if(dim(data[[j]])[2] == 4){
+      mserr = "known"
+    }else{
+      mserr = "none"
+    }
+    models <- c("BM1", "BMS", "OU1", "OUM", "OUMA", "OUMV", "OUMVA")
+    for(k in 1:length(models)){
+      obj <- mclapply(simmaps, function(x) singleRun(data[[j]], x, models[k], mserr), mc.cores = ncores)
+      # save the modeling results of a dataset
+      file.name <- paste0(wd, "/res_ouwie/", labels[i], "/", labels[i], "-", names(data)[j], "-", format(Sys.time(), "%y_%m_%d"), "-OURes-", models[k], "-", iter, ".Rsave")
+      save(obj, file = file.name)
+      obj <- NULL
+    }
+  }
+}
 
 
 

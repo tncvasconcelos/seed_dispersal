@@ -1,11 +1,23 @@
+getTmax <- function(tree.file){
+  load(tree.file)
+  nm <- strsplit(strsplit(tree.file, "/")[[1]][length(strsplit(tree.file, "/")[[1]])],"-")[[1]][1]
+  Tmax <- max(branching.times(obj[[1]]$phy))
+  names(Tmax) <- nm
+  return(Tmax)
+}
+
 # this script takes OUwie output tables and makes figures 
 
+require(corHMM)
 require(viridis)
 require(ggplot2)
 require(gridExtra)
 
 wd <- "~/2021_SeedDispersal/"
 files <- paste0("~/2021_SeedDispersal/tables/", dir("~/2021_SeedDispersal/tables/"))
+corFiles <- paste0("~/2021_SeedDispersal/res_corhmm/", dir("~/2021_SeedDispersal/res_corhmm/"))
+Tmax <- sapply(corFiles, getTmax, USE.NAMES = FALSE)
+
 cols <- viridis(2)
 
 for(i in 1:length(files)){
@@ -16,24 +28,32 @@ for(i in 1:length(files)){
   res_table <- read.csv(file_i)
   
   if(dat.type == "temp"){
-    res_table$Optim <- exp(res_table$Optim) - 273
-    ylabC <- "Temp. Optima (\u00B0C)"
-    main <- paste0("Data: Temperature & SE: ", se)
+    ylabA <- "half-life - MY"
+    res_table$Alpha <- log(2)/res_table$Alpha
+    ylabB <- expression(paste(sigma,  " - ln(K)"^2))
+    ylabC <- expression(paste(theta,  " - ln(K)"))
+    main <- paste0("Temperature")
   }
   if(dat.type == "prec"){
-    res_table$Optim <- exp(res_table$Optim)
-    ylabC <- "Precip. Optima (mm)"
-    main <- paste0("Data: Precipitation & SE: ", se)
+    ylabA <- "half-life - MY"
+    res_table$Alpha <- log(2)/res_table$Alpha
+    ylabB <- expression(paste(sigma,  " - ln(mm/year)"^2))
+    ylabC <- expression(paste(theta,  " - ln(mm/year)"))
+    main <- paste0("Precipitation")
   }
   if(dat.type == "arid"){
-    res_table$Optim <- exp(res_table$Optim)
-    ylabC <- "Aridity"
-    main <- paste0("Data: Global Aridity Index & SE: ", se)
+    ylabA <- "half-life - MY"
+    res_table$Alpha <- log(2)/res_table$Alpha
+    ylabB <- expression(paste(sigma))
+    ylabC <- expression(paste(theta))
+    main <- paste0("Global Aridity Index")
   }
   if(dat.type == "pet"){
-    res_table$Optim <- exp(res_table$Optim)
-    ylabC <- "Potential Evapo-Transpiration"
-    main <- paste0("Data: Potential Evapo-Transpiration & SE: ", se)
+    ylabA <- "half-life - MY"
+    res_table$Alpha <- log(2)/res_table$Alpha
+    ylabB <- expression(paste(sigma,  " - ln(mm/year)"^2))
+    ylabC <- expression(paste(theta,  " - ln(mm/year)"))
+    main <- paste0("Potential Evapo-Transpiration")
   }
   
   file.name <- paste0(wd, "figures/", dat.type, "-SE.", se, ".pdf")
@@ -41,7 +61,7 @@ for(i in 1:length(files)){
   pdf(file = file.name, width = 12, height = 10)
   grid.arrange(
     ggplot(res_table, aes(x=Clade, y=Alpha, fill = ObsSt)) + 
-      labs(x = "", y = "Alpha") +
+      labs(x = "", y = ylabA) +
       scale_fill_manual(values=cols) + 
       scale_colour_manual(values=cols) + 
       theme(text = element_text(size = 20), plot.title = element_text(hjust = 0.5)) + 
@@ -49,7 +69,7 @@ for(i in 1:length(files)){
       geom_boxplot(),
     
     ggplot(res_table, aes(x=Clade, y=Sigma, fill = ObsSt)) + 
-      labs(x = "", y = "Sigma") +
+      labs(x = "", y = ylabB) +
       scale_fill_manual(values=cols) + 
       theme(text = element_text(size = 20)) + 
       geom_boxplot(),

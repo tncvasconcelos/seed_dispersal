@@ -30,14 +30,14 @@ for(i in 1:length(files)){
   if(dat.type == "temp"){
     ylabA <- "half-life - MY"
     res_table$Alpha <- log(2)/res_table$Alpha
-    ylabB <- expression(paste(sigma,  " - ln(K)"^2))
+    ylabB <- expression(paste(sigma))
     ylabC <- expression(paste(theta,  " - ln(K)"))
     main <- paste0("Temperature")
   }
   if(dat.type == "prec"){
     ylabA <- "half-life - MY"
     res_table$Alpha <- log(2)/res_table$Alpha
-    ylabB <- expression(paste(sigma,  " - ln(mm/year)"^2))
+    ylabB <- expression(paste(sigma))
     ylabC <- expression(paste(theta,  " - ln(mm/year)"))
     main <- paste0("Precipitation")
   }
@@ -45,19 +45,20 @@ for(i in 1:length(files)){
     ylabA <- "half-life - MY"
     res_table$Alpha <- log(2)/res_table$Alpha
     ylabB <- expression(paste(sigma))
-    ylabC <- expression(paste(theta))
+    ylabC <- expression(paste(theta, " - ln(AI * 10000)"))
     main <- paste0("Global Aridity Index")
   }
   if(dat.type == "pet"){
     ylabA <- "half-life - MY"
     res_table$Alpha <- log(2)/res_table$Alpha
-    ylabB <- expression(paste(sigma,  " - ln(mm/year)"^2))
+    ylabB <- expression(paste(sigma))
     ylabC <- expression(paste(theta,  " - ln(mm/year)"))
     main <- paste0("Potential Evapo-Transpiration")
   }
   
   file.name <- paste0(wd, "figures/", dat.type, "-SE.", se, ".pdf")
-  
+  res_table$ObsSt[res_table$ObsSt=="Dry"] <- "Abiotic"
+  res_table$ObsSt[res_table$ObsSt=="Fleshy"] <- "Biotic"
   pdf(file = file.name, width = 12, height = 10)
   grid.arrange(
     # optima

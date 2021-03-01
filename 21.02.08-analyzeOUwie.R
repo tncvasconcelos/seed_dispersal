@@ -15,16 +15,20 @@ getSummaryTable <- function(folder, dat.type, se){
   names(ModelList) <- models
   count <- 1
   cat("Loading Models...\n")
+
   for(i in models){
     ToLoad <- files[grep(i, files)]
+    iters <- unlist(lapply(strsplit(ToLoad, "-"), function(x) x[length(x)]))
+    iters <- sort(iters)
     obj_j <- list()
-    for(j in 1:length(ToLoad)){
-      load(ToLoad[j])
+    for(j in 1:length(iters)){
+      load(ToLoad[grep(iters[j], ToLoad)])
       obj_j <- c(obj_j, obj)
     }
     ModelList[[count]] <- obj_j
     count <- count + 1
   }
+  
   nMap <- length(ModelList[[1]])
   corModels <- names(ModelList[[1]])
   ErrMat <- matrix(unlist(lapply(ModelList, function(x) lapply(x, function(y) class(y) == "try-error"))), nMap, 7)
@@ -37,6 +41,11 @@ getSummaryTable <- function(folder, dat.type, se){
   # get the relavent params and stats for each map i and model in the set
   for(i in ErrIndex){
     obj_i <- lapply(ModelList, function(x) x[[i]])
+    dat.check <- do.call(cbind, lapply(obj_i, function(x) x$phy$maps))
+    if(!all(apply(dat.check, 1, function(x) length(unique(x)) == 1))){
+      cat("\nNot all the data matches, check", i)
+    }
+    lapply(ModelList, function(x) x[[i]])
     nRegime <- length(obj_i[[7]]$tot.states)
     ResTable <- matrix(0, length(obj_i), (nRegime * 3) + 2)
     rownames(ResTable) <- unlist(lapply(strsplit(names(obj_i), "_"), function(x) x[1]))
@@ -61,6 +70,13 @@ getSummaryTable <- function(folder, dat.type, se){
     count <- count + 1
   }
   names(ResTables) <- corModels[ErrIndex]
+  file.name <- folder
+  clade <- lapply(strsplit(folder, "/"), function(x) x[length(x)])[[1]]
+  replacer <- paste0(clade, "-", dat.type, "-", se, ".Rsave")
+  file.name <- gsub("res_ouwie", "res_tables", file.name)
+  file.name <- gsub(clade, replacer, file.name)
+  cat("\nSaving ResTables...", file.name)
+  save(ResTables, file = file.name)
   return(ResTables)
 }
 
@@ -143,9 +159,6 @@ Folders <- paste0(wd, "/res_ouwie/", dir("res_ouwie/"))
 cor_folder <- paste0(wd, "/res_corhmm/", dir("res_corhmm/"))
 dat.types <- c("temp", "prec", "pet", "arid")
 params <- c("Alpha", "Sigma", "Optim")
-
-Folders <- Folders[2:5]
-cor_folder <- cor_folder[2:5]
 
 # make plots for a given clade and standard error
 se <- FALSE

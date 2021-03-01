@@ -77,6 +77,14 @@ organizeDat <- function(dat, simmap){
   return(dat)
 }
 
+# organizeDat <- function(dat, simmap){
+#   mapping <- unlist(lapply(simmap$maps, function(x) names(x[length(x)])))
+#   nTip <- length(simmap$tip.label)
+#   TipStates <- mapping[match(match(rownames(dat), simmap$tip.label), simmap$edge[,2])]
+#   dat$reg <- TipStates
+#   return(dat)
+# }
+
 singleRun <- function(dat, simmap, model, mserr){
   data <- organizeDat(dat, simmap)
   obj <- try(OUwie(simmap, data, model, simmap.tree = TRUE, algorithm = "three.point", scaleHeight = FALSE, mserr = mserr, ub = 10))
@@ -106,7 +114,6 @@ for(iter in 1:10){
   csv <- CSVs[1]
   data <- getData(csv)
   # for j in each trait dataset
-  j = 7 # only arid
   file.name <- paste0(wd, "/simmaps/", labels[1], "-", names(data)[j], "-", format(Sys.time(), "%y_%m_%d"), "-simmap-", iter, ".Rsave")
   simmaps <- getSimmaps(file = Rsaves[1], dat = data[[j]], save.file = file.name, nMap = nmap)
   if(dim(data[[j]])[2] == 4){

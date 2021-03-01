@@ -183,9 +183,53 @@ for(se in c(TRUE, FALSE)){
       AvgAICcWt <- colMeans(do.call(rbind, lapply(SumTable, function(x) x[,2])))
       res[[k]] <- cbind(Clade, tab)
     }
+    res_table <- do.call(rbind, res)  
+    write.csv(res_table, file.name)
   }
-  res_table <- do.call(rbind, res)  
-  write.csv(res_table, file.name)
 }
 
+
+
+## imports
+require(corHMM)
+require(OUwie)
+
+## run
+wd <- "~/2021_SeedDispersal"
+# wd <- getwd()
+setwd(wd)
+clades <- unlist(lapply(strsplit(dir("res_corhmm/"), "-"), function(x) x[1]))
+cor_folder <- paste0(wd, "/res_corhmm/", dir("res_corhmm/"))
+table_folder <- paste0(wd, "/res_tables/", dir("res_tables/"))
+dat.types <- c("temp", "prec", "pet", "arid")
+params <- c("Alpha", "Sigma", "Optim")
+
+for(se in c(TRUE, FALSE)){
+  for(i in 1:length(dat.types)){
+    dat.type <- dat.types[i]
+    # file.name <- paste0(wd, "/figures/", dat.type, "-SE.", se, ".pdf")
+    file.name <- paste0(wd, "/tables/", dat.type, "-SE.", se, ".csv")
+    print(file.name)
+    res <- vector("list", length(Folders))
+    for(k in 1:length(clades)){
+      clade_i <- clades[k]
+      cat("\nStarting", clade_i, "...\n")
+      cor_file <- cor_folder[grep(clade_i, cor_folder)]
+      # extract the results of the OU models
+      sumfile <- table_folder[grep(clade_i, table_folder)]
+      sumfile <- sumfile[grep(dat.type, sumfile)]
+      sumfile <- sumfile[grep(se, sumfile)]
+      load(sumfile)
+      SumTable <- ResTables
+      # model average the OU models
+      AvgParams <- lapply(SumTable, summarizeTable)
+      # do tip averaging to get it in terms of biotic and abiotic
+      tab <- getTipRates(cor_file, AvgParams)
+      AvgAICcWt <- colMeans(do.call(rbind, lapply(SumTable, function(x) x[,2])))
+      res[[k]] <- cbind(clade_i, tab)
+    }
+    res_table <- do.call(rbind, res)  
+    write.csv(res_table, file.name)
+  }
+}
 

@@ -100,7 +100,7 @@ setwd(wd)
 Rsaves <- paste0(wd, "res_corhmm/", dir("res_corhmm/"))
 labels <- unlist(lapply(strsplit(dir("res_corhmm/"), "-"), function(x) x[1]))
 
-for(i in Rsaves){
+for(i in Rsaves[1]){
   getResultsTable(i)
   getModelRateMats(i)
   getWeightedASR(i)

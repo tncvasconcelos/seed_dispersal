@@ -215,6 +215,7 @@ for(se in c(TRUE, FALSE)){
       clade_i <- clades[k]
       cat("\nStarting", clade_i, "...\n")
       cor_file <- cor_folder[grep(clade_i, cor_folder)]
+      load(cor_file)
       # extract the results of the OU models
       sumfile <- table_folder[grep(clade_i, table_folder)]
       sumfile <- sumfile[grep(dat.type, sumfile)]
@@ -231,5 +232,14 @@ for(se in c(TRUE, FALSE)){
     res_table <- do.call(rbind, res)  
     write.csv(res_table, file.name)
   }
+}
+
+
+out <- vector("numeric", length(table_folder))
+name <- unlist(lapply(strsplit(table_folder, "/"), function(x) x[length(x)]))
+names(out) <- name
+for(i in 1:length(table_folder)){
+  load(table_folder[i])
+  out[i] <- length(ResTables)
 }
 

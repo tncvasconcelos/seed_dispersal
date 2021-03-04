@@ -110,13 +110,15 @@ RemoveWrongCountries <- function(points, lon="decimalLongitude", lat="decimalLat
       tmp_subset <- tmp_points[tmp_points$countryCode==tmp_country,]
       coords <- stats::na.omit(tmp_subset[,c("x","y")])
       sp::coordinates(coords) <- ~ x + y
-      sp::proj4string(coords) <- sp::proj4string(wrld_simpl)
+      sp::proj4string(coords) <- sp::proj4string(wrld_simpl) <- "+proj=longlat +ellps=WGS84 +no_defs" 
       country_plus_buffer <- raster::buffer(wrld_simpl[country_index,], buffer) # adding buffer around country
       answer <- which(is.na(sp::over(coords, country_plus_buffer)))
       dubiousGBIF_ids <- c(dubiousGBIF_ids, tmp_subset$gbifID[answer])
     }
   }
+  if(!is.null(dubiousGBIF_ids)) {
   points_cleaned <- points[-which(points$gbifID %in% dubiousGBIF_ids),]
+  }
   npoints_end <- nrow(points_cleaned)
   print(paste0(npoints_start - npoints_end, " points removed."))
   return(points_cleaned)

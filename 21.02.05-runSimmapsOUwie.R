@@ -106,59 +106,64 @@ labels <- unlist(lapply(strsplit(dir("res_corhmm/"), "-"), function(x) x[1]))
 CSVs <- getCSVs(wd)
 
 # input params 
-ncores <- 20
+ncores <- 50
 nmap <- 100
 iter <- 1
 
 for(iter in 1:10){
-  csv <- CSVs[1]
-  data <- getData(csv)
-  # for j in each trait dataset
-  file.name <- paste0(wd, "/simmaps/", labels[1], "-", names(data)[j], "-", format(Sys.time(), "%y_%m_%d"), "-simmap-", iter, ".Rsave")
-  simmaps <- getSimmaps(file = Rsaves[1], dat = data[[j]], save.file = file.name, nMap = nmap)
-  if(dim(data[[j]])[2] == 4){
-    mserr = "known"
-  }else{
-    mserr = "none"
-  }
-  models <- c("BM1", "BMS", "OU1", "OUM", "OUMA", "OUMV", "OUMVA")
-  for(k in 1:length(models)){
-      obj <- mclapply(simmaps, function(x) singleRun(data[[j]], x, models[k], mserr), mc.cores = ncores)
-      # save the modeling results of a dataset
-      file.name <- paste0(wd, "/res_ouwie/", labels[1], "/", labels[1], "-", names(data)[j], "-", format(Sys.time(), "%y_%m_%d"), "-OURes-", models[k], "-", iter, ".Rsave")
-      save(obj, file = file.name)
-      obj <- NULL
+  for(i in 1:length(CSVs)){
+    csv <- CSVs[i]
+    data <- getData(csv)
+    # for j in each trait dataset
+    for(j in 1:length(data)){
+      file.name <- paste0(wd, "/simmaps/", labels[i], "-", names(data)[j], "-", format(Sys.time(), "%y_%m_%d"), "-simmap-", iter, ".Rsave")
+      simmaps <- getSimmaps(file = Rsaves[i], dat = data[[j]], save.file = file.name, nMap = nmap)
+      if(dim(data[[j]])[2] == 4){
+        mserr = "known"
+      }else{
+        mserr = "none"
+      }
+      models <- c("BM1", "BMS", "OU1", "OUM", "OUMA", "OUMV", "OUMVA")
+      for(k in 1:length(models)){
+        obj <- mclapply(simmaps, function(x) singleRun(data[[j]], x, models[k], mserr), mc.cores = ncores)
+        # save the modeling results of a dataset
+        file.name <- paste0(wd, "/res_ouwie/", labels[1], "/", labels[1], "-", names(data)[j], "-", format(Sys.time(), "%y_%m_%d"), "-OURes-", models[k], "-", iter, ".Rsave")
+        save(obj, file = file.name)
+        obj <- NULL
+      }
+    }
   }
 }
 # i = j = 1
 # k = 1
 # run the simmaps
 
-ncores <- 40
+ncores <- 50
 nmap <- 100
 iter <- 1
 
 
-for(iter in 2:10){
-  csv <- CSVs[1]
-  data <- getData(csv)
-  i = 1
-  # for j in each trait dataset
-  for(j in 1:length(data)){
-    file.name <- paste0(wd, "/simmaps/", labels[i], "-", names(data)[j], "-", format(Sys.time(), "%y_%m_%d"), "-simmap-", iter, ".Rsave")
-    simmaps <- getSimmaps(file = Rsaves[i], dat = data[[j]], save.file = file.name, nMap = nmap)
-    if(dim(data[[j]])[2] == 4){
-      mserr = "known"
-    }else{
-      mserr = "none"
-    }
-    models <- c("BM1", "BMS", "OU1", "OUM", "OUMA", "OUMV", "OUMVA")
-    for(k in 1:length(models)){
-      obj <- mclapply(simmaps, function(x) singleRun(data[[j]], x, models[k], mserr), mc.cores = ncores)
-      # save the modeling results of a dataset
-      file.name <- paste0(wd, "/res_ouwie/", labels[i], "/", labels[i], "-", names(data)[j], "-", format(Sys.time(), "%y_%m_%d"), "-OURes-", models[k], "-", iter, ".Rsave")
-      save(obj, file = file.name)
-      obj <- NULL
+for(iter in 1:10){
+  for(i in 3){
+    csv <- CSVs[i]
+    data <- getData(csv)
+    # for j in each trait dataset
+    for(j in 1:length(data)){
+      file.name <- paste0(wd, "/simmaps/", labels[i], "-", names(data)[j], "-", format(Sys.time(), "%y_%m_%d"), "-simmap-", iter, ".Rsave")
+      simmaps <- getSimmaps(file = Rsaves[i], dat = data[[j]], save.file = file.name, nMap = nmap)
+      if(dim(data[[j]])[2] == 4){
+        mserr = "known"
+      }else{
+        mserr = "none"
+      }
+      models <- c("BM1", "BMS", "OU1", "OUM", "OUMA", "OUMV", "OUMVA")
+      for(k in 1:length(models)){
+        obj <- mclapply(simmaps, function(x) singleRun(data[[j]], x, models[k], mserr), mc.cores = ncores)
+        # save the modeling results of a dataset
+        file.name <- paste0(wd, "/res_ouwie/", labels[1], "/", labels[1], "-", names(data)[j], "-", format(Sys.time(), "%y_%m_%d"), "-OURes-", models[k], "-", iter, ".Rsave")
+        save(obj, file = file.name)
+        obj <- NULL
+      }
     }
   }
 }

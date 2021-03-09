@@ -160,7 +160,7 @@ for(iter in 1:10){
       for(k in 1:length(models)){
         obj <- mclapply(simmaps, function(x) singleRun(data[[j]], x, models[k], mserr), mc.cores = ncores)
         # save the modeling results of a dataset
-        file.name <- paste0(wd, "/res_ouwie/", labels[1], "/", labels[1], "-", names(data)[j], "-", format(Sys.time(), "%y_%m_%d"), "-OURes-", models[k], "-", iter, ".Rsave")
+        file.name <- paste0(wd, "/res_ouwie/", labels[i], "/", labels[i], "-", names(data)[j], "-", format(Sys.time(), "%y_%m_%d"), "-OURes-", models[k], "-", iter, ".Rsave")
         save(obj, file = file.name)
         obj <- NULL
       }

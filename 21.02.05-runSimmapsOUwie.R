@@ -106,8 +106,8 @@ labels <- unlist(lapply(strsplit(dir("res_corhmm/"), "-"), function(x) x[1]))
 CSVs <- getCSVs(wd)
 
 # input params 
-ncores <- 50
-nmap <- 100
+ncores <- 1
+nmap <- 2
 iter <- 1
 
 for(iter in 1:10){
@@ -137,6 +137,8 @@ for(iter in 1:10){
 # i = j = 1
 # k = 1
 # run the simmaps
+
+singleRun(data[[j]], simmaps[[1]], "OUMA", mserr)
 
 ncores <- 50
 nmap <- 100

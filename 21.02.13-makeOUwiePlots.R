@@ -13,8 +13,10 @@ require(viridis)
 require(ggplot2)
 require(gridExtra)
 
+# wd <- "~/Desktop/climate_niche_seed_dispersal/seed_dispersal"
 wd <- "~/2021_SeedDispersal/"
 files <- paste0("~/2021_SeedDispersal/tables/", dir("~/2021_SeedDispersal/tables/"))
+# files = paste0(wd,"/tables/", list.files(paste0(wd, "/tables")))
 corFiles <- paste0("~/2021_SeedDispersal/res_corhmm/", dir("~/2021_SeedDispersal/res_corhmm/"))
 Tmax <- sapply(corFiles, getTmax, USE.NAMES = FALSE)
 

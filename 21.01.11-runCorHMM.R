@@ -1,5 +1,6 @@
 # this script will run corHMM analyses on the 4 + 1 datasets
 # set wd
+# wd <- "~/Desktop/climate_niche_seed_dispersal/seed_dispersal/"
 wd <- "~/2021_SeedDispersal/"
 setwd(wd)
 wd <- paste0(getwd(), "/")
@@ -93,4 +94,6 @@ for(i in 1:length(labels)){
 }
 
 Apoc <- runCorHMM(data[,1], name = labels[1], nStarts = 49, nCores = 10)
+
+
 

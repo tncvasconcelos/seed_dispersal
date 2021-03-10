@@ -27,8 +27,10 @@ require(corHMM)
 require(OUwie)
 require(ggplot2)
 require(stringr)
+library(gridExtra)
 
 ## run
+# wd <- "~/Desktop/climate_niche_seed_dispersal/seed_dispersal"
 wd <- "~/2021_SeedDispersal"
 # wd <- getwd()
 setwd(wd)
@@ -90,4 +92,201 @@ X <- chisq.test(c.table)
 round(X$expected)
 c.table
 round(X$residuals)
+
+#-------------------------
+# testing different plot arrangement
+#-------------------------
+
+pal <- "BuPu"
+
+pdf(paste0(wd, "/figures/AICcWts/aicw.pdf"), width=12, height=10)
+
+se <- TRUE
+# Apocynaceae
+clade <- clades[1]
+
+dat.type <- dat.types[4]
+obj <- makeTable(files.tables, dat.type, clade, se)
+  
+plot_apo1 <- ggplot(obj, aes(x=model.ou, y=AICcwt, fill=model.ou)) + 
+  geom_boxplot() + 
+  theme_bw() + 
+  theme(legend.position = "none") + 
+  annotate(geom="text", x=.5, y=1.01, size=5, hjust=0, label="AI") + 
+  xlab("") +
+  scale_fill_brewer(palette=pal)
+
+dat.type <- dat.types[1]
+obj <- makeTable(files.tables, dat.type, clade, se)
+
+plot_apo2 <- ggplot(obj, aes(x=model.ou, y=AICcwt, fill=model.ou)) + 
+  geom_boxplot() + 
+  theme_bw() + 
+  theme(legend.position = "none") + 
+  annotate(geom="text", x=.5, y=1.01, size=5, hjust=0, label="MAT") + 
+  xlab("") +
+  scale_fill_brewer(palette=pal)
+
+dat.type <- dat.types[2]
+obj <- makeTable(files.tables, dat.type, clade, se)
+
+plot_apo3 <- ggplot(obj, aes(x=model.ou, y=AICcwt, fill=model.ou)) + 
+  geom_boxplot() + 
+  theme_bw() + 
+  theme(legend.position = "none") + 
+  annotate(geom="text", x=.5, y=1.01, size=5, hjust=0, label="MAP") + 
+  xlab("") +
+  scale_fill_brewer(palette=pal)
+
+# Ericaceae
+clade <- clades[2]
+
+dat.type <- dat.types[4]
+obj <- makeTable(files.tables, dat.type, clade, se)
+
+plot_eri1 <- ggplot(obj, aes(x=model.ou, y=AICcwt, fill=model.ou)) + 
+  geom_boxplot() + 
+  theme_bw() + 
+  theme(legend.position = "none") + 
+  annotate(geom="text", x=.5, y=1.01, size=5, hjust=0, label="AI") + 
+  xlab("") +
+  scale_fill_brewer(palette=pal)
+
+dat.type <- dat.types[1]
+obj <- makeTable(files.tables, dat.type, clade, se)
+
+plot_eri2 <- ggplot(obj, aes(x=model.ou, y=AICcwt, fill=model.ou)) + 
+  geom_boxplot() + 
+  theme_bw() + 
+  theme(legend.position = "none") + 
+  annotate(geom="text", x=.5, y=1.01, size=5, hjust=0, label="MAT") + 
+  xlab("") +
+  scale_fill_brewer(palette=pal)
+
+dat.type <- dat.types[2]
+obj <- makeTable(files.tables, dat.type, clade, se)
+
+plot_eri3 <- ggplot(obj, aes(x=model.ou, y=AICcwt, fill=model.ou)) + 
+  geom_boxplot() + 
+  theme_bw() + 
+  theme(legend.position = "none") + 
+  annotate(geom="text", x=.5, y=1.01, size=5, hjust=0, label="MAP") + 
+  xlab("") +
+  scale_fill_brewer(palette=pal)
+
+# Melastomataceae
+clade <- clades[3]
+
+dat.type <- dat.types[4]
+obj <- makeTable(files.tables, dat.type, clade, se)
+
+plot_melas1 <- ggplot(obj, aes(x=model.ou, y=AICcwt, fill=model.ou)) + 
+  geom_boxplot() + 
+  theme_bw() + 
+  theme(legend.position = "none") + 
+  annotate(geom="text", x=.5, y=1.01, size=5, hjust=0, label="AI") + 
+  xlab("") +
+  scale_fill_brewer(palette=pal)
+
+dat.type <- dat.types[1]
+obj <- makeTable(files.tables, dat.type, clade, se)
+
+plot_melas2 <- ggplot(obj, aes(x=model.ou, y=AICcwt, fill=model.ou)) + 
+  geom_boxplot() + 
+  theme_bw() + 
+  theme(legend.position = "none") + 
+  annotate(geom="text", x=.5, y=1.01, size=5, hjust=0, label="MAT") + 
+  xlab("") +
+  scale_fill_brewer(palette=pal)
+
+dat.type <- dat.types[2]
+obj <- makeTable(files.tables, dat.type, clade, se)
+
+plot_melas3 <- ggplot(obj, aes(x=model.ou, y=AICcwt, fill=model.ou)) + 
+  geom_boxplot() + 
+  theme_bw() + 
+  theme(legend.position = "none") + 
+  annotate(geom="text", x=.5, y=1.01, size=5, hjust=0, label="MAP") + 
+  xlab("") +
+  scale_fill_brewer(palette=pal)
+
+# Rosaceae
+clade <- clades[4]
+
+dat.type <- dat.types[4]
+obj <- makeTable(files.tables, dat.type, clade, se)
+
+plot_rosa1 <- ggplot(obj, aes(x=model.ou, y=AICcwt, fill=model.ou)) + 
+  geom_boxplot() + 
+  theme_bw() + 
+  theme(legend.position = "none") + 
+  annotate(geom="text", x=.5, y=1.01, size=5, hjust=0, label="AI") + 
+  xlab("") +
+  scale_fill_brewer(palette=pal)
+
+dat.type <- dat.types[1]
+obj <- makeTable(files.tables, dat.type, clade, se)
+
+plot_rosa2 <- ggplot(obj, aes(x=model.ou, y=AICcwt, fill=model.ou)) + 
+  geom_boxplot() + 
+  theme_bw() + 
+  theme(legend.position = "none") + 
+  annotate(geom="text", x=.5, y=1.01, size=5, hjust=0, label="MAT") + 
+  xlab("") +
+  scale_fill_brewer(palette=pal)
+
+dat.type <- dat.types[2]
+obj <- makeTable(files.tables, dat.type, clade, se)
+
+plot_rosa3 <- ggplot(obj, aes(x=model.ou, y=AICcwt, fill=model.ou)) + 
+  geom_boxplot() + 
+  theme_bw() + 
+  theme(legend.position = "none") + 
+  annotate(geom="text", x=.5, y=1.01, size=5, hjust=0, label="MAP") + 
+  xlab("") +
+  scale_fill_brewer(palette=pal)
+
+# Solanaceae
+clade <- clades[5]
+
+dat.type <- dat.types[4]
+obj <- makeTable(files.tables, dat.type, clade, se)
+
+plot_sol1 <- ggplot(obj, aes(x=model.ou, y=AICcwt, fill=model.ou)) + 
+  geom_boxplot() + 
+  theme_bw() + 
+  theme(legend.position = "none") + 
+  annotate(geom="text", x=.5, y=1.01, size=5, hjust=0, label="AI") + 
+  xlab("") +
+  scale_fill_brewer(palette=pal)
+
+dat.type <- dat.types[1]
+obj <- makeTable(files.tables, dat.type, clade, se)
+
+plot_sol2 <- ggplot(obj, aes(x=model.ou, y=AICcwt, fill=model.ou)) + 
+  geom_boxplot() + 
+  theme_bw() + 
+  theme(legend.position = "none") + 
+  annotate(geom="text", x=.5, y=1.01, size=5, hjust=0, label="MAT") + 
+  xlab("") +
+  scale_fill_brewer(palette=pal)
+
+dat.type <- dat.types[2]
+obj <- makeTable(files.tables, dat.type, clade, se)
+
+plot_sol3 <- ggplot(obj, aes(x=model.ou, y=AICcwt, fill=model.ou)) + 
+  geom_boxplot() + 
+  theme_bw() + 
+  theme(legend.position = "none") + 
+  annotate(geom="text", x=.5, y=1.01, size=5, hjust=0, label="MAP") + 
+  xlab("") +
+  scale_fill_brewer(palette=pal)
+
+grid.arrange(plot_apo1, plot_apo2, plot_apo3, 
+             plot_eri1, plot_eri2, plot_eri3,
+             plot_melas1, plot_melas2, plot_melas3,
+             plot_rosa1, plot_rosa2, plot_rosa3,
+             plot_sol1, plot_sol2, plot_sol3, ncol=3, nrow = 5)
+
+dev.off()
 

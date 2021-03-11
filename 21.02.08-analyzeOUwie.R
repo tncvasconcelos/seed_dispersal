@@ -172,7 +172,7 @@ for(se in c(TRUE, FALSE)){
     for(k in 1:length(Folders)){
       ou_folder <- Folders[k]
       Clade <- strsplit(ou_folder, "/")[[1]][length(strsplit(ou_folder, "/")[[1]])]
-      cat("\nStarting", Clade, "...\n")
+      cat("Starting", Clade, "...\n")
       cor_file <- cor_folder[grep(Clade, cor_folder)]
       # extract the results of the OU models
       SumTable <- getSummaryTable(ou_folder, dat.type, se)
@@ -209,11 +209,11 @@ for(se in c(TRUE, FALSE)){
     dat.type <- dat.types[i]
     # file.name <- paste0(wd, "/figures/", dat.type, "-SE.", se, ".pdf")
     file.name <- paste0(wd, "/tables/", dat.type, "-SE.", se, ".csv")
-    print(file.name)
-    res <- vector("list", length(Folders))
+    res <- vector("list", length(clades))
     for(k in 1:length(clades)){
       clade_i <- clades[k]
       cat("\nStarting", clade_i, "...\n")
+      print(file.name)
       cor_file <- cor_folder[grep(clade_i, cor_folder)]
       load(cor_file)
       # extract the results of the OU models

@@ -10,7 +10,11 @@ makeTable <- function(files.tables, dat.type, clade, se){
     if(length(string.number.loc[[i]]) == 0){
       models.maps[i] <- models.maps[i]
     }else{
-      models.maps[i] <- str_sub(models.maps[i], 1L, string.number.loc[[i]][1,1])
+      if(length(grep("\\.", models.maps[i])) == 0){
+        models.maps[i] <- str_sub(models.maps[i], 1L, string.number.loc[[i]][1,1]-1)
+      }else{
+        models.maps[i] <- str_sub(models.maps[i], 1L, string.number.loc[[i]][1,1])
+      }
     }
   }
   names.maps <- rep(models.maps, each = 7)

@@ -71,10 +71,17 @@ reRunObjTry <- function(dat, model, index, map){
 
 # rerun optimizaion failures 
 reRunObjLik <- function(obj, index, vals){
+  ub <- c(0.33, 2)
   if(any(is.na(vals))){
     vals <- vals[2]
+    if(vals > ub[2]){
+      ub[2] <- vals + (vals * 0.1)
+    }
   }else{
     vals <- vals[c(1,2)]
+    if(any(vals > ub)){
+      ub[vals > ub] <- vals[vals > ub] + (vals[vals > ub] * 0.1)
+    }
   }
   res <- OUwie(phy=obj[[index]]$phy, 
                data = cbind(rownames(obj[[index]]$data), obj[[index]]$data), 
@@ -82,7 +89,7 @@ reRunObjLik <- function(obj, index, vals){
                simmap.tree = TRUE, 
                mserr = ifelse(dim(obj[[index]]$data)[2] == 3, "known", "none"),
                algorithm = "three.point",
-               ub = 20, 
+               ub = ub, 
                starting.vals = vals,
                quiet = TRUE)
   return(res)
@@ -120,6 +127,6 @@ cor_folder <- paste0(wd, "/res_corhmm/", dir("res_corhmm/"))
 map_files <- paste0(wd, "/simmaps/", dir("simmaps/"))
 
 
-reRunClade(Folders[4], map_files)
+reRunClade(Folders[5], map_files)
 
 

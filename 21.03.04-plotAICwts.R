@@ -97,6 +97,7 @@ round(X$expected)
 c.table
 round(X$residuals)
 
+
 #-------------------------
 # testing different plot arrangement
 #-------------------------
@@ -293,4 +294,28 @@ grid.arrange(plot_apo1, plot_apo2, plot_apo3,
              plot_sol1, plot_sol2, plot_sol3, ncol=3, nrow = 5)
 
 dev.off()
+
+
+
+
+
+### testing model number 
+wd <- "~/2021_SeedDispersal"
+setwd(wd)
+files.tables <- paste0(wd, "/res_tables/", dir("res_tables/"))
+dat.types <- c("temp", "prec", "pet", "arid")
+clades <- unique(unlist(lapply(strsplit(dir("res_tables/"), "-"), function(x)x[1])))
+
+
+se <- TRUE
+no.of.complete <- matrix(NA, length(clades), length(dat.types), dimnames = list(clades, dat.types))
+for(clade in clades){
+  for(dat.type in dat.types){
+    ToLoad <- files.tables[grep(dat.type, files.tables)]
+    ToLoad <- ToLoad[grep(se, ToLoad)]
+    ToLoad <- ToLoad[grep(clade, ToLoad)]
+    load(ToLoad)
+    no.of.complete[rownames(no.of.complete) %in% clade, colnames(no.of.complete) %in% dat.type] <- length(ResTables)
+  }
+}
 

@@ -27,7 +27,7 @@ names(trees) <- labels
 
 # Number of tips in full dataset
 # length(unlist(lapply(trees, "[[","tip.label")))
-# [1] 4523 
+# [1] 5564 
 
 # Fill in GBIF credentials for download
 user <- "" # username

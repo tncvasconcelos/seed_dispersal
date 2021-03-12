@@ -88,7 +88,13 @@ for(i in 1:length(files)){
   dev.off()
 }
 
+exp(-0.5 * c(A=0, B=1, C=2))/sum(exp(-0.5 * c(A=0, B=1, C=2)))
+exp(-0.5 * c(A=0, B=1, A2=0, C=2))/sum(exp(-0.5 * c(A=0, B=1, A2=0, C=2)))
 
+exp(-0.5 * c(0, 1, 1, 2))/sum(exp(-0.5 * c(0, 1, 1, 2)))
+exp(-0.5 * c(0, 1, 2, 3))/sum(exp(-0.5 * c(0, 1, 2, 3)))
+
+exp(-0.5 * c(A=0, C=2))/sum(exp(-0.5 * c(A=0,C=2)))
 
 grid.arrange(plots[[1]], plots[[2]], plots[[3]], 
              plots[[4]], plots[[5]], plots[[6]],

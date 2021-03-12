@@ -136,12 +136,32 @@ getTipRates <- function(cor_file, AvgParams){
     tip.states_i <- obj[[Index[i]]]$tip.states
     biota_i <- obj[[Index[i]]]$data[,2]
     pars_i <- AvgParams[[i]]
-    tmp[[i]] <- averageTipStatePars(pars_i, tip.states_i, biota_i)
+    if(dim(tip.states_i)[2]*3  != length(pars_i)){
+      tmp[[i]] <- NULL
+    }else{
+      tmp[[i]] <- averageTipStatePars(pars_i, tip.states_i, biota_i)
+    }
   }
+  tmp <- tmp[unlist(lapply(tmp, function(x) !is.null(x)))]
+  
+  #check which params are too high and need to be removed
+  skimTopBot <- function(v){
+    OddlySmallIndex <- sort.int(v, index.return = TRUE)$ix[1:round(length(v) - length(v)*0.95)]
+    OddlyLargeIndex <- sort.int(v, index.return = TRUE)$ix[round(length(v)*0.95):length(v)]
+    OddlyIndexed <- c(OddlyLargeIndex, OddlySmallIndex)
+    v <- v[-OddlyIndexed]
+    return(v)
+  }
+  
+  Alpha <- do.call(cbind, lapply(tmp, function(x) x[,2]))
+  Alpha <- apply(Alpha, 1, function(x) mean(skimTopBot(x)))
+  
+  Sigma <- do.call(cbind, lapply(tmp, function(x) x[,3]))
+  Sigma <- apply(Sigma, 1, function(x) mean(skimTopBot(x)))
+  
+  Optim <- do.call(cbind, lapply(tmp, function(x) x[,4]))
+  Optim <- apply(Optim, 1, function(x) mean(skimTopBot(x)))
 
-  Alpha <- rowMeans(do.call(cbind, lapply(tmp, function(x) x[,2])))
-  Sigma <- rowMeans(do.call(cbind, lapply(tmp, function(x) x[,3])))
-  Optim <- rowMeans(do.call(cbind, lapply(tmp, function(x) x[,4])))
   out <- data.frame(ObsSt = tmp[[1]][,1], Alpha = Alpha, Sigma = Sigma, Optim = Optim, row.names = rownames(tmp[[1]]))
   return(out)
 }

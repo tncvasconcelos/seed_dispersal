@@ -3,9 +3,9 @@ seed dispersal paper
 
 # files 
 
-20.12.14-runCorHMM.R - runs the corhmm models 
+21.01.11-runCorHMM.R - runs the corhmm models 
 
-20.12.15-analyzeCorHMM.R - preliminary analysis of corhmm models 
+21.01.12-analyzeCorHMM.R - preliminary analysis of corhmm models 
 
 21.02.05-runSimmapsOUwie.R - generates simmaps proportional to the model averages of corHMM modeling. then runs the OU models on 1000 generated simmaps for each dataset (prec and temp with and without SE).
 
@@ -18,6 +18,12 @@ seed dispersal paper
 21.02.04-treePlots.R - code for some descriptive plots
 
 21.02.10-functionsClimate.R - functions used to filter GBIF data and to extract summary statistics from climate layers
+
+summ_results.R - code to summarize table of parameters
+
+21.03.04-plotAICwts.R - code to make plot with aicw for OUwie results
+
+plot_corhmm.R - code to plot aicw for corHMM
 
 SummaryTable_corHMM.xslx - a one stop shop to navigate through the results saved in table_corhmm/ 
 

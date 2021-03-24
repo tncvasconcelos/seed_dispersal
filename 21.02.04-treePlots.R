@@ -30,7 +30,7 @@ asr_files <- list.files(corhmm.dir)[grep("ASR", list.files(corhmm.dir))]
 asr <- lapply(paste0(corhmm.dir, "/", asr_files), function(x) read.csv(x)[,-1])
 
 # labeling 
-names(asr) <- names(summstats) <- names(traits) <- names(trees) <- labels
+names(asr) <- names(summstats) <- names(traits) <- names(trees) <- names(niches) <- labels
 
 # Tree plots
 for(group_index in 1:length(trees)) {
@@ -228,21 +228,21 @@ for(group_index in 1:length(trees)) {
   aridity <- aridity[order(match(names(aridity), names(mode_cols)))]
   x <- 1:length(aridity)
   plot(aridity, x, lwd = 0.2, xlim=range(c(min(aridity), max(aridity))),
-       pch=19, yaxt = "n", xlab="Aridity Index", ylab="", frame.plot=T, cex=0.5, col=mode_cols)
+       pch=19, yaxt = "n", xlab="AI", ylab="", frame.plot=T, cex=0.5, col=mode_cols, las=2)
   segments(min(aridity), 1:length(aridity), aridity[1:length(aridity)], 1:length(aridity), col= mode_cols,lwd = 0.2)
   
   # Temperature
   temp <- temp[order(match(names(temp), names(mode_cols)))]
   x <- 1:length(temp)
   plot(temp, x, lwd = 0.2, xlim=range(c(min(temp), max(temp))),
-       pch=19, yaxt = "n", xlab="Temperature (C)", ylab="", frame.plot=T, cex=0.5, col=mode_cols)
+       pch=19, yaxt = "n", xlab="MAT", ylab="", frame.plot=T, cex=0.5, col=mode_cols, las=2)
   segments(min(temp), 1:length(temp), temp[1:length(temp)], 1:length(temp), col= mode_cols,lwd = 0.2)
   
   # Precipitation
   prec <- prec[order(match(names(prec), names(mode_cols)))]
   x <- 1:length(prec)
   plot(prec, x, lwd = 0.2, xlim=range(c(min(prec), max(prec))),
-       pch=19, yaxt = "n", xlab="Precipitation (mm)", ylab="", frame.plot=T, cex=0.5,col=mode_cols)
+       pch=19, yaxt = "n", xlab="MAP", ylab="", frame.plot=T, cex=0.5,col=mode_cols, las=2)
   segments(min(prec), 1:length(prec), prec[1:length(prec)], 1:length(prec), col= mode_cols,lwd = 0.2)
   
   dev.off()

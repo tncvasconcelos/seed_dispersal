@@ -3,6 +3,8 @@ seed dispersal paper
 
 # files 
 
+Rosaceae_niche_partial.csv - removed Cotoneaster_morrisonensis and Sorbus_randaiensis as outliers
+
 21.01.11-runCorHMM.R - runs the corhmm models 
 
 21.01.12-analyzeCorHMM.R - preliminary analysis of corhmm models 

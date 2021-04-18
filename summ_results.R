@@ -76,7 +76,7 @@ for(i in 1:length(results)){
   final <- rbind(final, rbind(total_fleshy, total_dry))
   }
   final <- as.data.frame(final)
-  colnames(final) <- c("clade","fruit_type","n","mean","theta_t","sigma2","alpha","half-life","stationary_var")
+  colnames(final) <- c("clade","fruit_type","theta_t","sigma2","alpha","half-life","stationary_var")
   result_list[[i]] <- final
   names(result_list)[i] <- labels[i]
 }
@@ -146,3 +146,76 @@ for(var_index in c("mean_aridity","mean_prec","mean_temp")){
   }
 }
 write.csv(all_clades, paste0(trait.dir, "/actual_mean/all_clades_actual_mean_se.csv"))
+
+
+## plotting theta vs. stationary_var
+
+result_list <- list()
+for(i in 1:length(results)){
+  results[[i]]$ObsSt[which(results[[i]]$ObsSt=="Abiotic")] <- "Dry"
+  results[[i]]$ObsSt[which(results[[i]]$ObsSt=="Biotic")] <- "Fleshy"
+  var1 <- results[[i]]
+  clade_names <- unique(results[[i]]$clade_i)
+  final <- matrix(nrow=0,ncol=4)
+  for(j in 1:length(clade_names)){
+    clade1 <- var1[var1$clade_i %in% clade_names[j],]
+    mean_dry_alpha <- round(mean(clade1[clade1$ObsSt=="Dry","Alpha"]),2)
+    se_dry_alpha <- round(sd(clade1[clade1$ObsSt=="Dry","Alpha"]) / sqrt(length(clade1[clade1$ObsSt=="Dry","Alpha"])),2)
+    mean_fleshy_alpha <- round(mean(clade1[clade1$ObsSt=="Fleshy","Alpha"]),2)
+    se_fleshy_alpha <- round(sd(clade1[clade1$ObsSt=="Fleshy","Alpha"]) / sqrt(length(clade1[clade1$ObsSt=="Fleshy","Alpha"])),2)
+    #
+    mean_halflife_dry <- round(mean(log(2)/ clade1[clade1$ObsSt=="Dry","Alpha"]), 2)
+    se_halflife_dry <- round(sd(log(2)/ clade1[clade1$ObsSt=="Dry","Alpha"])  / sqrt(length(clade1[clade1$ObsSt=="Dry","Alpha"])), 2)
+    mean_halflife_fleshy <- round(mean(log(2)/ clade1[clade1$ObsSt=="Fleshy","Alpha"]), 2)
+    se_halflife_fleshy <- round(sd(log(2)/ clade1[clade1$ObsSt=="Fleshy","Alpha"]) / sqrt(length(clade1[clade1$ObsSt=="Fleshy","Alpha"])), 2)
+    #
+    mean_dry_sigma <- round(mean(clade1[clade1$ObsSt=="Dry","Sigma"]),2)
+    se_dry_sigma <- round((sd(clade1[clade1$ObsSt=="Dry","Sigma"])  / sqrt(length(clade1[clade1$ObsSt=="Dry","Sigma"]))),2)
+    mean_fleshy_sigma <- round(mean(clade1[clade1$ObsSt=="Fleshy","Sigma"]),2)
+    se_fleshy_sigma <- round((sd(clade1[clade1$ObsSt=="Fleshy","Sigma"]) / sqrt(length(clade1[clade1$ObsSt=="Fleshy","Sigma"]))),2)
+    #
+    mean_dry_theta <- round(mean(clade1[clade1$ObsSt=="Dry","Optim"]),2)
+    se_dry_theta <- round(sd(clade1[clade1$ObsSt=="Dry","Optim"]) / sqrt(length(clade1[clade1$ObsSt=="Dry","Optim"])) ,2)
+    mean_fleshy_theta <- round(mean(clade1[clade1$ObsSt=="Fleshy","Optim"]),2)
+    se_fleshy_theta <- round(sd(clade1[clade1$ObsSt=="Fleshy","Optim"]) / sqrt(length(clade1[clade1$ObsSt=="Fleshy","Optim"])) ,2)
+    #
+    mean_dry_theta <- round(mean(clade1[clade1$ObsSt=="Dry","Optim"]),2)
+    se_dry_theta <- round(sd(clade1[clade1$ObsSt=="Dry","Optim"]) / sqrt(length(clade1[clade1$ObsSt=="Dry","Optim"])) ,2)
+    mean_fleshy_theta <- round(mean(clade1[clade1$ObsSt=="Fleshy","Optim"]),2)
+    se_fleshy_theta <- round(sd(clade1[clade1$ObsSt=="Fleshy","Optim"]) / sqrt(length(clade1[clade1$ObsSt=="Fleshy","Optim"])) ,2)
+    #
+    mean_dry_st_var <- round(mean(clade1[clade1$ObsSt=="Dry","Sigma"] / (2*clade1[clade1$ObsSt=="Dry","Alpha"])),2) 
+    se_dry_st_var <- round(sd(clade1[clade1$ObsSt=="Dry","Sigma"] / (2*clade1[clade1$ObsSt=="Dry","Alpha"])) / sqrt(length(clade1[clade1$ObsSt=="Dry","Sigma"])),2) 
+    mean_fleshy_st_var <- round(mean(clade1[clade1$ObsSt=="Fleshy","Sigma"] / (2*clade1[clade1$ObsSt=="Fleshy","Alpha"])),2) 
+    se_fleshy_st_var <- round(sd(clade1[clade1$ObsSt=="Fleshy","Sigma"] / (2*clade1[clade1$ObsSt=="Fleshy","Alpha"])) / sqrt(length(clade1[clade1$ObsSt=="Fleshy","Sigma"])),2)
+    #
+    transformed_theta <- exp(clade1[,"Optim"])
+    if(names(results)[i]=="temp") {
+      transformed_theta <- transformed_theta - 273.15
+    }
+    if(names(results)[i]=="arid") {
+      transformed_theta <- transformed_theta * 0.0001
+    }
+    mean_dry_theta_t <- round(mean(transformed_theta[clade1$ObsSt=="Dry"]),2)
+    se_dry_theta_t <- round(sd(transformed_theta[clade1$ObsSt=="Dry"]),2)
+    mean_fleshy_theta_t <- round(mean(transformed_theta[clade1$ObsSt=="Fleshy"]),2)
+    se_fleshy_theta_t <- round(sd(transformed_theta[clade1$ObsSt=="Fleshy"]),2)
+    #
+    total_fleshy <- c(clade_names[j],"Fleshy",mean_fleshy_theta_t, mean_fleshy_st_var)
+    total_dry <- c(clade_names[j],"Dry", mean_dry_theta_t, mean_dry_st_var)
+    
+    final <- rbind(final, rbind(total_fleshy, total_dry))
+  }
+  final <- as.data.frame(final)
+  colnames(final) <- c("clade","fruit_type","theta_t","stationary_var")
+  result_list[[i]] <- final
+  names(result_list)[i] <- labels[i]
+}
+
+plot(result_list$arid$theta_t ~ result_list$arid$stationary_var)
+model<- lm(as.numeric(result_list$prec$theta_t) ~ as.numeric(result_list$prec$stationary_var))
+summary(model)
+abline(model, col="blue")
+
+
+write.csv(result_list, file=paste0(wd, "/tables/results_summary.csv"))

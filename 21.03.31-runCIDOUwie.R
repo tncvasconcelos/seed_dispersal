@@ -118,20 +118,26 @@ labels <- unlist(lapply(strsplit(dir("res_corhmm/"), "-"), function(x) x[1]))
 CSVs <- getCSVs(wd)[-5]
 map_files <- paste0(wd, "/simmaps/", dir("simmaps/"))
 
-ncores <- 50
+ncores <- 42
 
 # i in clade
-for(i in 1:length(CSVs)){
+for(i in 3){
   csv <- CSVs[i]
   name.clade <- gsub(".*trait_data/", "", csv)
   name.clade <- gsub("_niche.csv", "", name.clade)
   data <- getData(csv)
+  completed.files <- dir(paste0("res_CID/", name.clade))
   # for j in each dataset (temp, prec, se or no, etc.)
   for(j in 1:length(data)){
     dat <- data[[j]]
     mserr <- ifelse(dim(dat)[2] == 3, "none", "known")
     name.dat <- names(data)[j]
     name.clade.dat <- paste0(name.clade, "-", name.dat, "-")
+    if(length(grep(name.clade.dat, completed.files)) == 140){
+      # we've already finished this dataset completely
+      cat(name.clade.dat, "already complete...\n")
+      next
+    }
     simmaps_file <- map_files[grep(name.clade.dat, map_files)]
     # for each iteration of 100 simmaps (1000 total iterations)
     for(k in 1:length(simmaps_file)){
@@ -143,17 +149,23 @@ for(i in 1:length(CSVs)){
       models <- c("BM1", "BMS", "OU1", "OUM", "OUMA", "OUMV", "OUMVA")
       # for l in each type of model being run (only hidden state models allowed)
       for(l in 1:length(models)){
-        obj.CID <- mclapply(simmaps, function(x) singleRunCID(dat, x, models[l], mserr), mc.cores = ncores)
-        obj.CD <- mclapply(simmaps, function(x) singleRunCD(dat, x, models[l], mserr), mc.cores = ncores)
-        paste0("/space_2/jamesboyko/2021_SeedDispersal/res_CID/", name.clade.dat, "CID.Rsave")
-        file.name.CID <- paste0("/space_2/jamesboyko/2021_SeedDispersal/res_CID/", name.clade, "/", name.clade.dat, format(Sys.time(), "%y_%m_%d"), "-CID-", models[l], "-", k, ".Rsave")
-        file.name.CD <- paste0("/space_2/jamesboyko/2021_SeedDispersal/res_CID/", name.clade, "/", name.clade.dat, format(Sys.time(), "%y_%m_%d"), "-CD-", models[l], "-", k, ".Rsave")
-        save(obj.CID, file = file.name.CID)
-        save(obj.CD, file = file.name.CD)
+        CIDChk <- length(grep(paste0(name.clade.dat, ".*", "-CID-", models[l], "-", k, ".Rsave"), completed.files))
+        CDChk <- length(grep(paste0(name.clade.dat, ".*", "-CD-", models[l], "-", k, ".Rsave"), completed.files))
+        if(CIDChk == 0){
+          obj.CID <- mclapply(simmaps, function(x) singleRunCID(dat, x, models[l], mserr), mc.cores = ncores)
+          file.name.CID <- paste0("/space_2/jamesboyko/2021_SeedDispersal/res_CID/", name.clade, "/", name.clade.dat, format(Sys.time(), "%y_%m_%d"), "-CID-", models[l], "-", k, ".Rsave")
+          save(obj.CID, file = file.name.CID)
+        }
+        if(CDChk == 0){
+          obj.CD <- mclapply(simmaps, function(x) singleRunCD(dat, x, models[l], mserr), mc.cores = ncores)
+          file.name.CD <- paste0("/space_2/jamesboyko/2021_SeedDispersal/res_CID/", name.clade, "/", name.clade.dat, format(Sys.time(), "%y_%m_%d"), "-CD-", models[l], "-", k, ".Rsave")
+          save(obj.CD, file = file.name.CD)
+        }
       }
     }
   }
 }
+
 
 # test code
 # data <- getData(csv)
@@ -162,27 +174,29 @@ for(i in 1:length(CSVs)){
 # #   file.name <- paste0("/space_2/jamesboyko/2021_SeedDispersal/simmaps_pruned/Rosaceae-dat.arid.se-", format(Sys.time(), "%y_%m_%d"), "-simmap-", iter, ".Rsave")
 # #   getSimmaps(Rsaves[4], dat = dat, save.file = file.name, nMap = 100)
 # # }
-# simmaps_file <- dir("simmaps_pruned/", full.names = TRUE)
-# name.clade.dat <- "Rosaceae-dat.arid.se"
-# 
-# simmaps_file <- map_files[grep("Solanaceae-dat.arid.se", map_files)]
-# name.clade.dat <- "Solanaceae-dat.arid.se"
-# 
-# for(i in 1:length(simmaps_file)){
-#   load(simmaps_file[i])
-#   simmapnames <- names(simmaps)
-#   simmaps <- simmaps[nchar(gsub("[0-9]", "", simmapnames)) >= 9]
-#   models <- c("BM1", "BMS", "OU1", "OUM", "OUMA", "OUMV", "OUMVA")
-#   for(k in 1:length(models)){
-#     obj.CID <- mclapply(simmaps, function(x) singleRunCID(dat, x, models[k], mserr), mc.cores = ncores)
-#     obj.CD <- mclapply(simmaps, function(x) singleRunCD(dat, x, models[k], mserr), mc.cores = ncores)
-#     # save the modeling results of a dataset
-#     paste0("/space_2/jamesboyko/2021_SeedDispersal/res_CID/", name.clade.dat, "-CID.Rsave")
-#     save(obj.CID, file = paste0("/space_2/jamesboyko/2021_SeedDispersal/res_CID/", name.clade.dat, "-CID-", format(Sys.time(), "%y_%m_%d"), "-OURes-", models[k], "-", i, ".Rsave"))
-#     save(obj.CD, file = paste0("/space_2/jamesboyko/2021_SeedDispersal/res_CID/", name.clade.dat, "-CD-", format(Sys.time(), "%y_%m_%d"), "-OURes-", models[k], "-", i, ".Rsave"))
-#     obj <- NULL
-#   }
-# }
+simmaps_file <- dir("simmaps_pruned/", full.names = TRUE)
+name.clade.dat <- "Rosaceae-dat.arid.se"
+
+simmaps_file <- map_files[grep("Solanaceae-dat.arid.se", map_files)]
+name.clade.dat <- "Solanaceae-dat.arid.se"
+
+
+
+for(i in 1:length(simmaps_file)){
+  load(simmaps_file[i])
+  simmapnames <- names(simmaps)
+  simmaps <- simmaps[nchar(gsub("[0-9]", "", simmapnames)) >= 9]
+  models <- c("BM1", "BMS", "OU1", "OUM", "OUMA", "OUMV", "OUMVA")
+  for(k in 1:length(models)){
+    obj.CID <- mclapply(simmaps, function(x) singleRunCID(dat, x, models[k], mserr), mc.cores = ncores)
+    obj.CD <- mclapply(simmaps, function(x) singleRunCD(dat, x, models[k], mserr), mc.cores = ncores)
+    # save the modeling results of a dataset
+    paste0("/space_2/jamesboyko/2021_SeedDispersal/res_CID/", name.clade.dat, "-CID.Rsave")
+    save(obj.CID, file = paste0("/space_2/jamesboyko/2021_SeedDispersal/res_CID/", name.clade.dat, "-CID-", format(Sys.time(), "%y_%m_%d"), "-OURes-", models[k], "-", i, ".Rsave"))
+    save(obj.CD, file = paste0("/space_2/jamesboyko/2021_SeedDispersal/res_CID/", name.clade.dat, "-CD-", format(Sys.time(), "%y_%m_%d"), "-OURes-", models[k], "-", i, ".Rsave"))
+    obj <- NULL
+  }
+}
 
 
 ### evaluation

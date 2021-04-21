@@ -1,10 +1,34 @@
 setwd("~/Desktop/climate_niche_seed_dispersal/seed_dispersal")
+library(ape)
 
 results.dir <- paste0(getwd(),"/tables")
 results.files <- list.files(results.dir)[grep("TRUE",list.files(results.dir))]
 labels <- sub("-SE.TRUE.csv","", results.files)
 results <- lapply(paste0(results.dir, "/", results.files), read.csv)
 names(results) <- labels
+
+
+tree.dir <- paste0(getwd(), "/trees")
+# Trees
+tree_files <- list.files(tree.dir, ".tre")
+trees <- lapply(paste0(tree.dir, "/", tree_files), read.tree)
+trees <- lapply(trees, ladderize)
+tree_labels <- unlist(lapply(strsplit(tree_files, "_"), "[[", 1))
+names(trees) <- tree_labels
+
+
+get.node.age <- function (phy) {
+  root.node <- length(phy$tip.label)+1
+  seq.nodes <- phy$edge
+  dists <- phy$edge.length
+  res <- numeric(max(phy$edge))
+  for (i in seq_len(nrow(seq.nodes))) {
+    res[seq.nodes[i, 2]] <- res[seq.nodes[i,1]] + dists[i]
+  }
+  ages <- abs(round(res,2)-round(max(res),2))
+  return(ages)
+}
+
 
 result_list <- list()
 for(i in 1:length(results)){
@@ -20,10 +44,20 @@ for(i in 1:length(results)){
     mean_fleshy_alpha <- round(mean(clade1[clade1$ObsSt=="Fleshy","Alpha"]),2)
     se_fleshy_alpha <- round(sd(clade1[clade1$ObsSt=="Fleshy","Alpha"]) / sqrt(length(clade1[clade1$ObsSt=="Fleshy","Alpha"])),2)
     #
-    mean_halflife_dry <- round(mean(log(2)/ clade1[clade1$ObsSt=="Dry","Alpha"]), 2)
-    se_halflife_dry <- round(sd(log(2)/ clade1[clade1$ObsSt=="Dry","Alpha"])  / sqrt(length(clade1[clade1$ObsSt=="Dry","Alpha"])), 2)
-    mean_halflife_fleshy <- round(mean(log(2)/ clade1[clade1$ObsSt=="Fleshy","Alpha"]), 2)
-    se_halflife_fleshy <- round(sd(log(2)/ clade1[clade1$ObsSt=="Fleshy","Alpha"]) / sqrt(length(clade1[clade1$ObsSt=="Fleshy","Alpha"])), 2)
+    # getting halflife in proportion to tree height
+    tmp_tree <- trees[which(names(trees)==clade_names[j])][[1]]
+    tree_height <- get.node.age(tmp_tree)[Ntip(tmp_tree)+1]
+    halflifes_dry <- log(2)/ clade1[clade1$ObsSt=="Dry","Alpha"]
+    mean_halflife_dry <- round(mean(halflifes_dry / tree_height ), 3)
+    se_halflife_dry <- round(sd(halflifes_dry / tree_height) / sqrt(length(halflifes_dry)), 2)
+    halflifes_fleshy <- log(2)/ clade1[clade1$ObsSt=="Fleshy","Alpha"]
+    mean_halflife_fleshy <- round(mean(halflifes_fleshy / tree_height), 2)
+    se_halflife_fleshy <- round(sd(halflifes_fleshy / tree_height) / sqrt(length(halflifes_fleshy)), 2)
+    #
+    #mean_halflife_dry <- round(mean(log(2)/ clade1[clade1$ObsSt=="Dry","Alpha"]), 2)
+    #se_halflife_dry <- round(sd(log(2)/ clade1[clade1$ObsSt=="Dry","Alpha"])  / sqrt(length(clade1[clade1$ObsSt=="Dry","Alpha"])), 2)
+    #mean_halflife_fleshy <- round(mean(log(2)/ clade1[clade1$ObsSt=="Fleshy","Alpha"]), 2)
+    #se_halflife_fleshy <- round(sd(log(2)/ clade1[clade1$ObsSt=="Fleshy","Alpha"]) / sqrt(length(clade1[clade1$ObsSt=="Fleshy","Alpha"])), 2)
     #
     mean_dry_sigma <- round(mean(clade1[clade1$ObsSt=="Dry","Sigma"]),2)
     se_dry_sigma <- round((sd(clade1[clade1$ObsSt=="Dry","Sigma"])  / sqrt(length(clade1[clade1$ObsSt=="Dry","Sigma"]))),2)
@@ -81,7 +115,7 @@ for(i in 1:length(results)){
   names(result_list)[i] <- labels[i]
 }
 
-write.csv(result_list, file=paste0(wd, "/tables/results_summary.csv"))
+write.csv(result_list, file=paste0(getwd(), "/tables/results_summary.csv"))
 
 
 ##

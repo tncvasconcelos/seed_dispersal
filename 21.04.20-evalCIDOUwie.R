@@ -73,6 +73,9 @@ getAvgParTablePerMap <- function(RsaveResult, RsaveMapNames, corObject){
     if(class(organizedAICTables[[i]]) == "logical"){
       next
     }
+    if(any(organizedAICTables[[i]]$AIC < -100000)){
+      next
+    }
     map_name_i <- strsplit(AICTableNames[i], "-")[[1]][length(strsplit(AICTableNames[i], "-")[[1]])-1]
     CharNum <- nchar(gsub("[0-9]", "", map_name_i))
     MatchedNames <- unlist(sapply(names(corObject), function(x) grep(paste0(x, "+"), map_name_i)))
@@ -109,7 +112,6 @@ Rsaves <- dir("~/2021_SeedDispersal/res_tables/", full.names = TRUE)
 Rsaves_names <- Rsaves[grep("names-", Rsaves)]
 Rsaves_res <- Rsaves[-grep("names-", Rsaves)]
 cor_folder <- dir("~/2021_SeedDispersal/res_corhmm/", full.names = TRUE)
-
 
 for(i in 1:length(Rsaves_res)){
   print(Rsaves_res[i])

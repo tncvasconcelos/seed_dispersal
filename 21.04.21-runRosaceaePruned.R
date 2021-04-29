@@ -410,7 +410,16 @@ getAvgParTablePerMap <- function(RsaveResult, RsaveMapNames, corObject){
     TipReconTables[[i]] <- TipAverageTable_i
   }
   TipReconTables <- TipReconTables[unlist(lapply(TipReconTables, function(x) !is.null(x)))]
-  AvgTipReconTable <- Reduce("+", TipReconTables)/length(TipReconTables)
+  # combining all the different map results into 1 andremoving the tails of the species distributions 
+  AvgTipReconTable <- matrix(NA, dim(corObject_i$tip.states)[1], 3, dimnames = list(rownames(corObject_i$tip.states), c("alpha", "sigma.sq", "theta")))
+  for(i in 1:dim(AvgTipReconTable)[1]){
+    sp_i_table <- do.call(rbind, lapply(TipReconTables, function(x) x[i,]))
+    no.to.remove <- round(0.05 * dim(sp_i_table)[1])
+    alpha_i <- mean(sort(sp_i_table[,1])[no.to.remove:(dim(sp_i_table)[1]-no.to.remove)])
+    sigma.sq_i <- mean(sort(sp_i_table[,2])[no.to.remove:(dim(sp_i_table)[1]-no.to.remove)])
+    theta_i <- mean(sort(sp_i_table[,3])[no.to.remove:(dim(sp_i_table)[1]-no.to.remove)])
+    AvgTipReconTable[i,] <- c(alpha_i, sigma.sq_i, theta_i)
+  }
   return(AvgTipReconTable)
 }
 

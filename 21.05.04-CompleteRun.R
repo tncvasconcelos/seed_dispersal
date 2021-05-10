@@ -192,7 +192,8 @@ getSummaryTables <- function(name.clade, name.dat, wd){
   for(i in 1:length(Rsaves)){
     cat("\r", round(i/length(Rsaves) * 100), "%:", Rsaves[i], "    ")
     load(Rsaves[i])
-    if(any(unlist(lapply(out, function(x) lapply(x, class))) == "try-error")){
+    if(any(unlist(lapply(out, function(x) lapply(x, class))) == "try-error") | 
+       any(unlist(lapply(out, function(x) lapply(x, is.null))))){
       AICTables[[i]] <- NA
     }else{
       AICTables[[i]] <- getAIC(out)
@@ -269,11 +270,11 @@ CSVs <- CSVs[-4]
 # bolu2 is running Sola - i = 5 (42 cores)
 # bolu1 is running Rosa - i = 4 (84 cores)
 
-ncores <- 84
+ncores <- 60
 nmap <- 100
-i <- 4
+i <- 3
 
-for(iter in 1:10){
+for(iter in 8:10){
   csv <- CSVs[i]
   data <- getData(csv)
   # for j in each trait dataset
@@ -309,17 +310,21 @@ for(iter in 1:10){
 
 # Ericaceae completed on bolu2 and being summarized
 # Apocynaceae completed on bolu1 and being summarized
+# Rosaceae completed on bolu1 and being summarized
+# Solanaceae completed on bolu2 and being summarized
+# Melastomataceae completed on bolu4 and summarized
+
 require(parallel)
 dat.types <- c("temp.se", "prec.se", "pet.se", "arid.se")
 wd <- getwd()
 # bring everything into a by map result
-mclapply(dat.types, function(x) ComeTogether(name.clade = "Apocynaceae", name.dat = x, wd = wd), mc.cores = 4)
+mclapply(dat.types, function(x) ComeTogether(name.clade = "Melastomataceae", name.dat = x, wd = wd), mc.cores = 4)
 
 # summarize the per map resutls
 dat.types <- c("temp.se", "prec.se", "pet.se", "arid.se")
 wd <- getwd()
-mclapply(dat.types, function(x) getSummaryTables(name.clade = "Apocynaceae", name.dat = x, wd = wd), mc.cores = 4)
-mclapply(dat.types, function(x) getSummaryTablesNames(name.clade = "Apocynaceae", name.dat = x, wd = wd), mc.cores = 4)
+mclapply(dat.types, function(x) getSummaryTables(name.clade = "Melastomataceae", name.dat = x, wd = wd), mc.cores = 4)
+mclapply(dat.types, function(x) getSummaryTablesNames(name.clade = "Melastomataceae", name.dat = x, wd = wd), mc.cores = 4)
 
 
 

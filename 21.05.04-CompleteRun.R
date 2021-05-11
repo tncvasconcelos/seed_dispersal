@@ -399,7 +399,7 @@ organizeAICTable <- function(AICTable){
   return(out.table)
 }
 
-getAvgParTablePerMap <- function(RsaveResult, RsaveMapNames, corObject){
+getAvgParTablePerMap <- function(RsaveResult, RsaveMapNames, corObject, HMMOnly=FALSE){
   load(RsaveResult)
   load(RsaveMapNames)
   organizedAICTables <- lapply(AICTables, organizeAICTable)
@@ -415,6 +415,9 @@ getAvgParTablePerMap <- function(RsaveResult, RsaveMapNames, corObject){
     CharNum <- nchar(gsub("[0-9]", "", map_name_i))
     MatchedNames <- unlist(sapply(names(corObject), function(x) grep(paste0(x, "+"), map_name_i)))
     Simmap_name_i <- names(MatchedNames[ifelse(CharNum > 8, 2, 1)])
+    if(HMMOnly == TRUE & nchar(Simmap_name_i) <= 7){
+      next
+    }
     corObject_i <- corObject[[match(Simmap_name_i, names(corObject))]]
     AvgParPerMap <- colSums(organizedAICTables[[i]][,4:dim(organizedAICTables[[i]])[2]] * organizedAICTables[[i]]$AICwt)
     AvgParPerMap <- matrix(AvgParPerMap, 3, dim(corObject_i$tip.states)[2], dimnames = list(c("alpha", "sigma.sq", "theta")))
@@ -440,14 +443,14 @@ getAvgParTablePerMap <- function(RsaveResult, RsaveMapNames, corObject){
   return(AvgTipReconTable)
 }
 
-getAvgTipReconForRsave <- function(RsaveResult, Rsaves_names, cor_folder){
+getAvgTipReconForRsave <- function(RsaveResult, Rsaves_names, cor_folder, HMMOnly=FALSE){
   RsaveFileName <- unlist(strsplit(RsaveResult, "/"))[length(unlist(strsplit(RsaveResult, "/")))]
   name.clade.dat <- gsub(".Rsave", "", RsaveFileName)
   RsaveMapNames <- Rsaves_names[grep(paste0(name.clade.dat, ".Rsave"), Rsaves_names)]
   name.clade <- gsub("-.*", "", name.clade.dat)
   cor_file <- cor_folder[grep(name.clade, cor_folder)]
   load(cor_file)
-  AvgTipReconTbl <- getAvgParTablePerMap(RsaveResult, RsaveMapNames, obj)
+  AvgTipReconTbl <- getAvgParTablePerMap(RsaveResult, RsaveMapNames, obj, HMMOnly)
   return(AvgTipReconTbl)
 }
 
@@ -465,5 +468,24 @@ for(i in 1:length(Rsaves_res)){
   FileName <- paste0("~/2021_SeedDispersal/tip_avg_tables/", FileName)
   write.csv(tmp, file = FileName)
 }
+
+
+# examining the Eric results with just HMMs
+Rsaves <- dir("~/2021_SeedDispersal/res_tables/", full.names = TRUE)
+Rsaves_names <- Rsaves[grep("names-", Rsaves)]
+Rsaves_names <- Rsaves_names[grep("Eric", Rsaves_names)]
+Rsaves_res <- Rsaves[-grep("names-", Rsaves)]
+Rsaves_res <- Rsaves_res[grep("Eric", Rsaves_res)]
+cor_folder <- dir("~/2021_SeedDispersal/res_corhmm/", full.names = TRUE)
+
+for(i in 1:length(Rsaves_res)){
+  print(Rsaves_res[i])
+  tmp <- getAvgTipReconForRsave(Rsaves_res[i], Rsaves_names, cor_folder, TRUE)
+  FileName <- strsplit(Rsaves_res[i], "/")[[1]][length(strsplit(Rsaves_res[i], "/")[[1]])]
+  FileName <- gsub(".Rsave", "-HMMOnlyTipAvgTable.csv", FileName)
+  FileName <- paste0("~/2021_SeedDispersal/tip_avg_tables/", FileName)
+  write.csv(tmp, file = FileName)
+}
+
 
 

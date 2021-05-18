@@ -1,9 +1,13 @@
-# seed_dispersal
-seed dispersal paper
+# 
+Datasets and codes linked to the manuscript: 
+
+The indirect role of frugivores in slowing down rates of climatic niche evolution in flowering plants
+
+Thais Vasconcelos, James Boyko, and Jeremy Beaulieu
 
 # files 
 
-Rosaceae_niche_partial.csv - removed Cotoneaster_morrisonensis and Sorbus_randaiensis as outliers
+Rosaceae_niche_partial.csv - removed Cotoneaster_morrisonensis and Sorbus_randaiensis as outliers in aridity index
 
 21.01.11-runCorHMM.R - runs the corhmm models 
 

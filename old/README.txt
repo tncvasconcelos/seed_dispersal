@@ -1,2 +1,0 @@
-# 21.01.12 
-added rsave_corhmm and table_corhmm  which contains corhmm results and summaries from a dataset that didn't include the Melastomataceae outgroup. not including this outgroup  resulted in an biotic ancestral state which was unique to the group and counterintuitive. these results also added more models which allowed for the parameter process to either be an equal rates or all rates differ.

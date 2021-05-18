@@ -3,7 +3,7 @@
 library(ape)
 library(phytools)
 setwd("~/Desktop/climate_niche_seed_dispersal/seed_dispersal")
-#setwd("~/2021_SeedDispersal/")
+# setwd("~/2021_SeedDispersal/")
 
 tree.dir <- paste0(getwd(), "/trees")
 trait.dir <- paste0(getwd(), "/trait_data")
@@ -19,7 +19,7 @@ labels <- unlist(lapply(strsplit(tree_files, "_"), "[[", 1))
 # Trait data
 trait_files <- list.files(trait.dir, ".csv")
 traits <- lapply(paste0(trait.dir, "/", trait_files[grep("trait_data", trait_files)]), read.csv)
-niches <- lapply(paste0(trait.dir, "/", trait_files[grep("niche", trait_files)]), read.csv)
+niches <- lapply(paste0(trait.dir, "/", trait_files[grep("niche", trait_files)][-5]), read.csv) # [-5] is a workaround to keep only the Rosaceae database with no outliers
 
 # Climate data
 summstats_files <- list.files(climate_data.dir, "summstats.csv")
@@ -71,7 +71,7 @@ for(group_index in 1:length(trees)) {
   group <- names(niches)[group_index]
   group_tree <- trees[[grep(group, names(trees))]]
   group_niches <- niches[[grep(group, names(niches))]]
-  
+ 
   # Matching datasets
   tree_pruned <- keep.tip(group_tree, group_niches$species)
   # Small corrections so that tips appear in the right order

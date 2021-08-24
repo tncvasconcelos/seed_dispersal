@@ -78,7 +78,7 @@ runCorHMM <- function(data_list, name, nStarts=0, nCores=1){
 }
 
 ## import and organize the data
-labels <- unique(unlist(lapply(strsplit(sort(dir("trait_data/")), "_"), function(x) x[1])))
+labels <- c("Apocynaceae", "Ericaceae", "Melastomataceae","Rosaceae", "Solanaceae")
 csv <- paste0(wd, "trait_data/", sort(dir("trait_data/")))
 csv <- csv[grep("_trait_data", csv)]
 tre <- paste0(wd, "trees/", sort(dir("trees/")))
@@ -93,6 +93,9 @@ for(i in 1:length(labels)){
   Results[[i]] <- runCorHMM(data[,i], name = labels[i], nStarts = 49, nCores = 50)
 }
 
+# rerun apoc
+csv <- "/space_2/jamesboyko/2021_SeedDispersal/trait_data/Apocynaceae_trait_data.csv"
+tre <- "/space_2/jamesboyko/2021_SeedDispersal/trees/Apocynaceae_Fishbein_etal_2018.tre"
 Apoc <- runCorHMM(data[,1], name = labels[1], nStarts = 49, nCores = 10)
 
 

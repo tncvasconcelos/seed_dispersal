@@ -94,9 +94,7 @@ for(i in 1:length(labels)){
 }
 
 # rerun apoc
-csv <- "/space_2/jamesboyko/2021_SeedDispersal/trait_data/Apocynaceae_trait_data.csv"
-tre <- "/space_2/jamesboyko/2021_SeedDispersal/trees/Apocynaceae_Fishbein_etal_2018.tre"
-Apoc <- runCorHMM(data[,1], name = labels[1], nStarts = 49, nCores = 10)
+res <- runCorHMM(data[,1], name = labels[1], nStarts = 19, nCores = 20)
 
 
 

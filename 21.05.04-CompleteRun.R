@@ -270,11 +270,11 @@ CSVs <- CSVs[-4]
 # bolu2 is running Sola - i = 5 (42 cores)
 # bolu1 is running Rosa - i = 4 (84 cores)
 
-ncores <- 60
+ncores <- 50
 nmap <- 100
-i <- 3
+i <- 1
 
-for(iter in 8:10){
+for(iter in 1:10){
   csv <- CSVs[i]
   data <- getData(csv)
   # for j in each trait dataset
@@ -454,7 +454,7 @@ getAvgTipReconForRsave <- function(RsaveResult, Rsaves_names, cor_folder, HMMOnl
   return(AvgTipReconTbl)
 }
 
-# actually running things
+# actually running things #
 Rsaves <- dir("~/2021_SeedDispersal/res_tables/", full.names = TRUE)
 Rsaves_names <- Rsaves[grep("names-", Rsaves)]
 Rsaves_res <- Rsaves[-grep("names-", Rsaves)]
@@ -470,22 +470,22 @@ for(i in 1:length(Rsaves_res)){
 }
 
 
-# examining the Eric results with just HMMs
-Rsaves <- dir("~/2021_SeedDispersal/res_tables/", full.names = TRUE)
-Rsaves_names <- Rsaves[grep("names-", Rsaves)]
-Rsaves_names <- Rsaves_names[grep("Eric", Rsaves_names)]
-Rsaves_res <- Rsaves[-grep("names-", Rsaves)]
-Rsaves_res <- Rsaves_res[grep("Eric", Rsaves_res)]
-cor_folder <- dir("~/2021_SeedDispersal/res_corhmm/", full.names = TRUE)
-
-for(i in 1:length(Rsaves_res)){
-  print(Rsaves_res[i])
-  tmp <- getAvgTipReconForRsave(Rsaves_res[i], Rsaves_names, cor_folder, TRUE)
-  FileName <- strsplit(Rsaves_res[i], "/")[[1]][length(strsplit(Rsaves_res[i], "/")[[1]])]
-  FileName <- gsub(".Rsave", "-HMMOnlyTipAvgTable.csv", FileName)
-  FileName <- paste0("~/2021_SeedDispersal/tip_avg_tables/", FileName)
-  write.csv(tmp, file = FileName)
-}
+# # examining the Eric results with just HMMs
+# Rsaves <- dir("~/2021_SeedDispersal/res_tables/", full.names = TRUE)
+# Rsaves_names <- Rsaves[grep("names-", Rsaves)]
+# Rsaves_names <- Rsaves_names[grep("Eric", Rsaves_names)]
+# Rsaves_res <- Rsaves[-grep("names-", Rsaves)]
+# Rsaves_res <- Rsaves_res[grep("Eric", Rsaves_res)]
+# cor_folder <- dir("~/2021_SeedDispersal/res_corhmm/", full.names = TRUE)
+# 
+# for(i in 1:length(Rsaves_res)){
+#   print(Rsaves_res[i])
+#   tmp <- getAvgTipReconForRsave(Rsaves_res[i], Rsaves_names, cor_folder, TRUE)
+#   FileName <- strsplit(Rsaves_res[i], "/")[[1]][length(strsplit(Rsaves_res[i], "/")[[1]])]
+#   FileName <- gsub(".Rsave", "-HMMOnlyTipAvgTable.csv", FileName)
+#   FileName <- paste0("~/2021_SeedDispersal/tip_avg_tables/", FileName)
+#   write.csv(tmp, file = FileName)
+# }
 
 
 

@@ -258,7 +258,7 @@ require(parallel)
 # wd <- "~/2021_SeedDispersal"
 wd <- getwd()
 setwd(wd)
-Rsaves <- paste0(wd, "/res_corhmm/", dir("res_corhmm/"))
+Rsaves <- paste0(wd, "/res_corhmm/", dir("res_corhmm/"))[-1]
 labels <- unlist(lapply(strsplit(dir("res_corhmm/"), "-"), function(x) x[1]))
 CSVs <- getCSVs(wd)
 CSVs <- CSVs[-4]
@@ -318,13 +318,13 @@ require(parallel)
 dat.types <- c("temp.se", "prec.se", "pet.se", "arid.se")
 wd <- getwd()
 # bring everything into a by map result
-mclapply(dat.types, function(x) ComeTogether(name.clade = "Melastomataceae", name.dat = x, wd = wd), mc.cores = 4)
+mclapply(dat.types, function(x) ComeTogether(name.clade = "Apocynaceae", name.dat = x, wd = wd), mc.cores = 4)
 
 # summarize the per map resutls
 dat.types <- c("temp.se", "prec.se", "pet.se", "arid.se")
 wd <- getwd()
-mclapply(dat.types, function(x) getSummaryTables(name.clade = "Melastomataceae", name.dat = x, wd = wd), mc.cores = 4)
-mclapply(dat.types, function(x) getSummaryTablesNames(name.clade = "Melastomataceae", name.dat = x, wd = wd), mc.cores = 4)
+mclapply(dat.types, function(x) getSummaryTables(name.clade = "Apocynaceae", name.dat = x, wd = wd), mc.cores = 4)
+mclapply(dat.types, function(x) getSummaryTablesNames(name.clade = "Apocynaceae", name.dat = x, wd = wd), mc.cores = 4)
 
 
 
@@ -457,8 +457,8 @@ getAvgTipReconForRsave <- function(RsaveResult, Rsaves_names, cor_folder, HMMOnl
 # actually running things #
 Rsaves <- dir("~/2021_SeedDispersal/res_tables/", full.names = TRUE)
 Rsaves_names <- Rsaves[grep("names-", Rsaves)]
-Rsaves_res <- Rsaves[-grep("names-", Rsaves)]
-cor_folder <- dir("~/2021_SeedDispersal/res_corhmm/", full.names = TRUE)
+Rsaves_res <- Rsaves[-grep("names-", Rsaves)][1:4]
+cor_folder <- dir("~/2021_SeedDispersal/res_corhmm/", full.names = TRUE)[-1]
 
 for(i in 1:length(Rsaves_res)){
   print(Rsaves_res[i])

@@ -8,16 +8,15 @@ library(gridExtra)
 
 corhmm.dir <- paste0(wd, "/table_corhmm")
 
-apocynaceae <- read.csv(paste0(corhmm.dir,"/Apocynaceae-21_02_25-ResTable.csv"))
+apocynaceae <- read.csv(paste0(corhmm.dir,"/Apocynaceae-21_08_24-ResTable.csv"))
 ericaceae <- read.csv(paste0(corhmm.dir,"/Ericaceae-21_01_11-ResTable.csv"))
 melastomataceae <- read.csv(paste0(corhmm.dir,"/Melastomataceae-21_01_11-ResTable.csv"))
 rosaceae <- read.csv(paste0(corhmm.dir,"/Rosaceae-21_01_11-ResTable.csv"))
 solanaceae <- read.csv(paste0(corhmm.dir,"/Solanaceae-21_01_11-ResTable.csv"))
 
-col = "#20A387"
+col = "#59121C"
  
 pdf(paste0(wd, "/figures/corhmm_all.pdf"), width=8, height=5)
-
 apocynaceae$X <- factor(apocynaceae$X, levels = apocynaceae$X)
 apo <- ggplot(data=apocynaceae, aes(x=X, y=AICc, group=1)) +
   geom_line(color=col)+

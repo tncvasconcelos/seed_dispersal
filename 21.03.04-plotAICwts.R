@@ -1,8 +1,9 @@
-makeTable <- function(files.tables, dat.type, clade, se){
+makeTable <- function(files.tables, dat.type, clade, se=NULL){
   ToLoad <- files.tables[grep(dat.type, files.tables)]
-  ToLoad <- ToLoad[grep(se, ToLoad)]
+  #ToLoad <- ToLoad[grep(se, ToLoad)]
   ToLoad <- ToLoad[grep(clade, ToLoad)]
   load(ToLoad)
+  ResTables <- AICTables # adding line to adjust name of objects (Sept2021)
   n.fit.maps <- length(ResTables)
   models.maps <- gsub("res_", "", names(ResTables))
   string.number.loc <- str_locate_all(models.maps, "[1-9]")
@@ -41,6 +42,8 @@ setwd(wd)
 files.tables <- paste0(wd, "/res_tables/", dir("res_tables/"))
 dat.types <- c("temp", "prec", "pet", "arid")
 clades <- unique(unlist(lapply(strsplit(dir("res_tables/"), "-"), function(x)x[1])))
+clades <- subset(clades, clades!="names")
+
 
 file.name <- paste0("~/2021_SeedDispersal/figures/AICcWtsByCor/", "AICSubsetPlots.pdf")
 pdf(file = file.name, width = 8, height = 8)
@@ -102,45 +105,77 @@ round(X$residuals)
 # testing different plot arrangement
 #-------------------------
 
+
+makeTable <- function(files.tables, dat.type, clade, se=NULL) {
+  ToLoad <- files.tables[grep(dat.type, files.tables)]
+  ToLoad <- ToLoad[grep(clade, ToLoad)]
+  load(ToLoad)
+  OUwie_models <- unique(gsub(paste(c("HYB.","CD.","CID."), collapse="|"), "", rownames(one_sim_map)))
+  all_aicwt <- as.data.frame(matrix(ncol=2, nrow=0))
+  colnames(all_aicwt) <- c("model.ou","AICcwt")
+  for(model_index in seq_along(OUwie_models)) {
+    one_model <- OUwie_models[model_index]
+    for(i in 1:length(AICTables)){
+      one_sim_map <- AICTables[[i]]
+      if(class(one_sim_map) == "data.frame") {
+        tmp_aicwts <- one_sim_map[grep(paste0(one_model,"$"), rownames(one_sim_map)),]$AICwt
+        tmp_result <- data.frame(model.ou=rep(one_model, length(tmp_aicwts)), AICcwt=tmp_aicwts)
+        all_aicwt <- rbind(all_aicwt, tmp_result)
+      }
+    }
+  }
+  #all_aicwt <- subset(all_aicwt, !is.na(all_aicwt))
+  return(all_aicwt)
+}
+
+
 pal <- "BuPu"
 
-pdf(paste0(wd, "/figures/AICcWts/aicw.pdf"), width=12, height=10)
+pdf(paste0(wd, "/figures/AICcWts/aicw.pdf"), width=8, height=5)
 
 se <- TRUE
 # Apocynaceae
 clade <- clades[1]
 
+files.tables <- subset(files.tables, !grepl("names", files.tables))
+
 dat.type <- dat.types[4]
 obj <- makeTable(files.tables, dat.type, clade, se)
-  
+
 plot_apo1 <- ggplot(obj, aes(x=model.ou, y=AICcwt, fill=model.ou)) + 
-  geom_boxplot() + 
-  theme_bw() + 
+  geom_boxplot(lwd=0.3, outlier.size=0.25) + 
+  theme_bw(base_size = 8) + 
   theme(legend.position = "none") + 
-  annotate(geom="text", x=.5, y=1.01, size=5, hjust=0, label="AI") + 
+  annotate(geom="text", x=.5, y=0.9, size=3, hjust=0, label="AI") + 
   xlab("") +
+  theme(axis.text.y = element_text(colour = 'black', size = 6),
+        axis.text.x = element_text(colour = 'black', size = 6)) +
   scale_fill_brewer(palette=pal)
 
 dat.type <- dat.types[1]
 obj <- makeTable(files.tables, dat.type, clade, se)
 
 plot_apo2 <- ggplot(obj, aes(x=model.ou, y=AICcwt, fill=model.ou)) + 
-  geom_boxplot() + 
-  theme_bw() + 
+  geom_boxplot(lwd=0.3, outlier.size=0.25) + 
+  theme_bw(base_size = 8) + 
   theme(legend.position = "none") + 
-  annotate(geom="text", x=.5, y=1.01, size=5, hjust=0, label="MAT") + 
+  annotate(geom="text", x=.5, y=0.9, size=3, hjust=0, label="MAT") + 
   xlab("") +
+  theme(axis.text.y = element_text(colour = 'black', size = 6),
+        axis.text.x = element_text(colour = 'black', size = 6)) +
   scale_fill_brewer(palette=pal)
 
 dat.type <- dat.types[2]
 obj <- makeTable(files.tables, dat.type, clade, se)
 
 plot_apo3 <- ggplot(obj, aes(x=model.ou, y=AICcwt, fill=model.ou)) + 
-  geom_boxplot() + 
-  theme_bw() + 
+  geom_boxplot(lwd=0.3, outlier.size=0.25) + 
+  theme_bw(base_size = 8) + 
   theme(legend.position = "none") + 
-  annotate(geom="text", x=.5, y=1.01, size=5, hjust=0, label="MAP") + 
+  annotate(geom="text", x=.5, y=0.9, size=3, hjust=0, label="MAP") + 
   xlab("") +
+  theme(axis.text.y = element_text(colour = 'black', size = 6),
+        axis.text.x = element_text(colour = 'black', size = 6)) +
   scale_fill_brewer(palette=pal)
 
 # Ericaceae
@@ -150,33 +185,39 @@ dat.type <- dat.types[4]
 obj <- makeTable(files.tables, dat.type, clade, se)
 
 plot_eri1 <- ggplot(obj, aes(x=model.ou, y=AICcwt, fill=model.ou)) + 
-  geom_boxplot() + 
-  theme_bw() + 
+  geom_boxplot(lwd=0.3, outlier.size=0.25) + 
+  theme_bw(base_size = 8) + 
   theme(legend.position = "none") + 
-  annotate(geom="text", x=.5, y=1.01, size=5, hjust=0, label="AI") + 
+  annotate(geom="text", x=.5, y=0.9, size=3, hjust=0, label="AI") + 
   xlab("") +
+  theme(axis.text.y = element_text(colour = 'black', size = 6),
+        axis.text.x = element_text(colour = 'black', size = 6)) +
   scale_fill_brewer(palette=pal)
 
 dat.type <- dat.types[1]
 obj <- makeTable(files.tables, dat.type, clade, se)
 
 plot_eri2 <- ggplot(obj, aes(x=model.ou, y=AICcwt, fill=model.ou)) + 
-  geom_boxplot() + 
-  theme_bw() + 
+  geom_boxplot(lwd=0.3, outlier.size=0.25) + 
+  theme_bw(base_size = 8) + 
   theme(legend.position = "none") + 
-  annotate(geom="text", x=.5, y=1.01, size=5, hjust=0, label="MAT") + 
+  annotate(geom="text", x=.5, y=0.9, size=3, hjust=0, label="MAT") + 
   xlab("") +
+  theme(axis.text.y = element_text(colour = 'black', size = 6),
+        axis.text.x = element_text(colour = 'black', size = 6)) +
   scale_fill_brewer(palette=pal)
 
 dat.type <- dat.types[2]
 obj <- makeTable(files.tables, dat.type, clade, se)
 
 plot_eri3 <- ggplot(obj, aes(x=model.ou, y=AICcwt, fill=model.ou)) + 
-  geom_boxplot() + 
-  theme_bw() + 
+  geom_boxplot(lwd=0.3, outlier.size=0.25) + 
+  theme_bw(base_size = 8) + 
   theme(legend.position = "none") + 
-  annotate(geom="text", x=.5, y=1.01, size=5, hjust=0, label="MAP") + 
+  annotate(geom="text", x=.5, y=0.9, size=3, hjust=0, label="MAP") + 
   xlab("") +
+  theme(axis.text.y = element_text(colour = 'black', size = 6),
+        axis.text.x = element_text(colour = 'black', size = 6)) +
   scale_fill_brewer(palette=pal)
 
 # Melastomataceae
@@ -186,33 +227,39 @@ dat.type <- dat.types[4]
 obj <- makeTable(files.tables, dat.type, clade, se)
 
 plot_melas1 <- ggplot(obj, aes(x=model.ou, y=AICcwt, fill=model.ou)) + 
-  geom_boxplot() + 
-  theme_bw() + 
+  geom_boxplot(lwd=0.3, outlier.size=0.25) + 
+  theme_bw(base_size = 8) + 
   theme(legend.position = "none") + 
-  annotate(geom="text", x=.5, y=1.01, size=5, hjust=0, label="AI") + 
+  annotate(geom="text", x=.5, y=0.9, size=3, hjust=0, label="AI") + 
   xlab("") +
+  theme(axis.text.y = element_text(colour = 'black', size = 6),
+        axis.text.x = element_text(colour = 'black', size = 6)) +
   scale_fill_brewer(palette=pal)
 
 dat.type <- dat.types[1]
 obj <- makeTable(files.tables, dat.type, clade, se)
 
 plot_melas2 <- ggplot(obj, aes(x=model.ou, y=AICcwt, fill=model.ou)) + 
-  geom_boxplot() + 
-  theme_bw() + 
+  geom_boxplot(lwd=0.3, outlier.size=0.25) + 
+  theme_bw(base_size = 8) + 
   theme(legend.position = "none") + 
-  annotate(geom="text", x=.5, y=1.01, size=5, hjust=0, label="MAT") + 
+  annotate(geom="text", x=.5, y=0.9, size=3, hjust=0, label="MAT") + 
   xlab("") +
+  theme(axis.text.y = element_text(colour = 'black', size = 6),
+        axis.text.x = element_text(colour = 'black', size = 6)) +
   scale_fill_brewer(palette=pal)
 
 dat.type <- dat.types[2]
 obj <- makeTable(files.tables, dat.type, clade, se)
 
 plot_melas3 <- ggplot(obj, aes(x=model.ou, y=AICcwt, fill=model.ou)) + 
-  geom_boxplot() + 
-  theme_bw() + 
+  geom_boxplot(lwd=0.3, outlier.size=0.25) + 
+  theme_bw(base_size = 8) + 
   theme(legend.position = "none") + 
-  annotate(geom="text", x=.5, y=1.01, size=5, hjust=0, label="MAP") + 
+  annotate(geom="text", x=.5, y=0.9, size=3, hjust=0, label="MAP") + 
   xlab("") +
+  theme(axis.text.y = element_text(colour = 'black', size = 6),
+        axis.text.x = element_text(colour = 'black', size = 6)) +
   scale_fill_brewer(palette=pal)
 
 # Rosaceae
@@ -222,35 +269,40 @@ dat.type <- dat.types[4]
 obj <- makeTable(files.tables, dat.type, clade, se)
 
 plot_rosa1 <- ggplot(obj, aes(x=model.ou, y=AICcwt, fill=model.ou)) + 
-  geom_boxplot() + 
-  theme_bw() + 
+  geom_boxplot(lwd=0.3, outlier.size=0.25) + 
+  theme_bw(base_size = 8) + 
   theme(legend.position = "none") + 
-  annotate(geom="text", x=.5, y=1.01, size=5, hjust=0, label="AI") + 
+  annotate(geom="text", x=.5, y=0.9, size=3, hjust=0, label="AI") + 
   xlab("") +
+  theme(axis.text.y = element_text(colour = 'black', size = 6),
+        axis.text.x = element_text(colour = 'black', size = 6)) +
   scale_fill_brewer(palette=pal)
 
 dat.type <- dat.types[1]
 obj <- makeTable(files.tables, dat.type, clade, se)
 
 plot_rosa2 <- ggplot(obj, aes(x=model.ou, y=AICcwt, fill=model.ou)) + 
-  geom_boxplot() + 
-  theme_bw() + 
+  geom_boxplot(lwd=0.3, outlier.size=0.25) + 
+  theme_bw(base_size = 8) + 
   theme(legend.position = "none") + 
-  annotate(geom="text", x=.5, y=1.01, size=5, hjust=0, label="MAT") + 
+  annotate(geom="text", x=.5, y=0.9, size=3, hjust=0, label="MAT") + 
   xlab("") +
+  theme(axis.text.y = element_text(colour = 'black', size = 6),
+        axis.text.x = element_text(colour = 'black', size = 6)) +
   scale_fill_brewer(palette=pal)
 
 dat.type <- dat.types[2]
 obj <- makeTable(files.tables, dat.type, clade, se)
 
 plot_rosa3 <- ggplot(obj, aes(x=model.ou, y=AICcwt, fill=model.ou)) + 
-  geom_boxplot() + 
-  theme_bw() + 
+  geom_boxplot(lwd=0.3, outlier.size=0.25) + 
+  theme_bw(base_size = 8) + 
   theme(legend.position = "none") + 
-  annotate(geom="text", x=.5, y=1.01, size=5, hjust=0, label="MAP") + 
+  annotate(geom="text", x=.5, y=0.9, size=3, hjust=0, label="MAP") + 
   xlab("") +
+  theme(axis.text.y = element_text(colour = 'black', size = 6),
+        axis.text.x = element_text(colour = 'black', size = 6)) +
   scale_fill_brewer(palette=pal)
-
 # Solanaceae
 clade <- clades[5]
 
@@ -258,40 +310,55 @@ dat.type <- dat.types[4]
 obj <- makeTable(files.tables, dat.type, clade, se)
 
 plot_sol1 <- ggplot(obj, aes(x=model.ou, y=AICcwt, fill=model.ou)) + 
-  geom_boxplot() + 
-  theme_bw() + 
+  geom_boxplot(lwd=0.3, outlier.size=0.25) + 
+  theme_bw(base_size = 8) + 
   theme(legend.position = "none") + 
-  annotate(geom="text", x=.5, y=1.01, size=5, hjust=0, label="AI") + 
+  annotate(geom="text", x=.5, y=0.9, size=3, hjust=0, label="AI") + 
   xlab("") +
+  theme(axis.text.y = element_text(colour = 'black', size = 6),
+        axis.text.x = element_text(colour = 'black', size = 6)) +
   scale_fill_brewer(palette=pal)
 
 dat.type <- dat.types[1]
 obj <- makeTable(files.tables, dat.type, clade, se)
 
 plot_sol2 <- ggplot(obj, aes(x=model.ou, y=AICcwt, fill=model.ou)) + 
-  geom_boxplot() + 
-  theme_bw() + 
+  geom_boxplot(lwd=0.3, outlier.size=0.25) + 
+  theme_bw(base_size = 8) + 
   theme(legend.position = "none") + 
-  annotate(geom="text", x=.5, y=1.01, size=5, hjust=0, label="MAT") + 
+  annotate(geom="text", x=.5, y=0.9, size=3, hjust=0, label="MAT") + 
   xlab("") +
+  theme(axis.text.y = element_text(colour = 'black', size = 6),
+        axis.text.x = element_text(colour = 'black', size = 6)) +
   scale_fill_brewer(palette=pal)
 
 dat.type <- dat.types[2]
 obj <- makeTable(files.tables, dat.type, clade, se)
 
 plot_sol3 <- ggplot(obj, aes(x=model.ou, y=AICcwt, fill=model.ou)) + 
-  geom_boxplot() + 
-  theme_bw() + 
+  geom_boxplot(lwd=0.3, outlier.size=0.25) + 
+  theme_bw(base_size = 8) + 
   theme(legend.position = "none") + 
-  annotate(geom="text", x=.5, y=1.01, size=5, hjust=0, label="MAP") + 
+  annotate(geom="text", x=.5, y=0.9, size=3, hjust=0, label="MAP") + 
   xlab("") +
+  theme(axis.text.y = element_text(colour = 'black', size = 6),
+        axis.text.x = element_text(colour = 'black', size = 6)) +
   scale_fill_brewer(palette=pal)
+
+# pdf(paste0(wd, "/figures/AICcWts/aicw.pdf"), width=8, height=5)
 
 grid.arrange(plot_apo1, plot_apo2, plot_apo3, 
              plot_eri1, plot_eri2, plot_eri3,
              plot_melas1, plot_melas2, plot_melas3,
              plot_rosa1, plot_rosa2, plot_rosa3,
              plot_sol1, plot_sol2, plot_sol3, ncol=3, nrow = 5)
+
+grid.arrange(
+  plot_apo1, plot_apo2, plot_apo3, plot_eri1,
+  widths = c(1, 1, 1),
+  layout_matrix = rbind(c(1,1,1),
+                        c(2,3,4))
+)
 
 dev.off()
 

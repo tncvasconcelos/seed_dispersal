@@ -7,11 +7,11 @@ library(ggplot2)
 #-----------------------------
 #-----------------------------
 # Old results (hybrid models only)
-results.dir <- paste0(getwd(),"/tables")
-results.files <- list.files(results.dir)[grep("TRUE",list.files(results.dir))]
-labels <- sub("-SE.TRUE.csv","", results.files)
-results <- lapply(paste0(results.dir, "/", results.files), read.csv)
-names(results) <- labels
+#results.dir <- paste0(getwd(),"/tables")
+#results.files <- list.files(results.dir)[grep("TRUE",list.files(results.dir))]
+#labels <- sub("-SE.TRUE.csv","", results.files)
+#results <- lapply(paste0(results.dir, "/", results.files), read.csv)
+#names(results) <- labels
 
 tree.dir <- paste0(getwd(), "/trees")
 tree_files <- list.files(tree.dir, ".tre")
@@ -32,82 +32,82 @@ get.node.age <- function (phy) {
   return(ages)
 }
 
-result_list <- list()
-for(i in 1:length(results)){
-  results[[i]]$ObsSt[which(results[[i]]$ObsSt=="Abiotic")] <- "Dry"
-  results[[i]]$ObsSt[which(results[[i]]$ObsSt=="Biotic")] <- "Fleshy"
-  var1 <- results[[i]]
-  clade_names <- unique(results[[i]]$clade_i)
-  final <- matrix(nrow=0,ncol=7)
-  for(j in 1:length(clade_names)){
-    clade1 <- var1[var1$clade_i %in% clade_names[j],]
-    mean_dry_alpha <- round(mean(clade1[clade1$ObsSt=="Dry","Alpha"]),2)
-    se_dry_alpha <- round(sd(clade1[clade1$ObsSt=="Dry","Alpha"]) / sqrt(length(clade1[clade1$ObsSt=="Dry","Alpha"])),2)
-    mean_fleshy_alpha <- round(mean(clade1[clade1$ObsSt=="Fleshy","Alpha"]),2)
-    se_fleshy_alpha <- round(sd(clade1[clade1$ObsSt=="Fleshy","Alpha"]) / sqrt(length(clade1[clade1$ObsSt=="Fleshy","Alpha"])),2)
+#result_list <- list()
+#for(i in 1:length(results)){
+#  results[[i]]$ObsSt[which(results[[i]]$ObsSt=="Abiotic")] <- "Dry"
+#  results[[i]]$ObsSt[which(results[[i]]$ObsSt=="Biotic")] <- "Fleshy"
+#  var1 <- results[[i]]
+#  clade_names <- unique(results[[i]]$clade_i)
+#  final <- matrix(nrow=0,ncol=7)
+#  for(j in 1:length(clade_names)){
+#    clade1 <- var1[var1$clade_i %in% clade_names[j],]
+#    mean_dry_alpha <- round(mean(clade1[clade1$ObsSt=="Dry","Alpha"]),2)
+#    se_dry_alpha <- round(sd(clade1[clade1$ObsSt=="Dry","Alpha"]) / sqrt(length(clade1[clade1$ObsSt#=="Dry","Alpha"])),2)
+#    mean_fleshy_alpha <- round(mean(clade1[clade1$ObsSt=="Fleshy","Alpha"]),2)
+#    se_fleshy_alpha <- round(sd(clade1[clade1$ObsSt=="Fleshy","Alpha"]) / sqrt(length(clade1[clade1$ObsSt=="Fleshy","Alpha"])),2)
     #
     # getting halflife in proportion to tree height
-    tmp_tree <- trees[which(names(trees)==clade_names[j])][[1]]
-    tree_height <- get.node.age(tmp_tree)[Ntip(tmp_tree)+1]
-    halflifes_dry <- log(2)/ clade1[clade1$ObsSt=="Dry","Alpha"]
-    mean_halflife_dry <- round(mean(halflifes_dry / tree_height ), 3)
-    se_halflife_dry <- round(sd(halflifes_dry / tree_height) / sqrt(length(halflifes_dry)), 2)
-    halflifes_fleshy <- log(2)/ clade1[clade1$ObsSt=="Fleshy","Alpha"]
-    mean_halflife_fleshy <- round(mean(halflifes_fleshy / tree_height), 2)
-    se_halflife_fleshy <- round(sd(halflifes_fleshy / tree_height) / sqrt(length(halflifes_fleshy)), 2)
+#    tmp_tree <- trees[which(names(trees)==clade_names[j])][[1]]
+#    tree_height <- get.node.age(tmp_tree)[Ntip(tmp_tree)+1]
+#    halflifes_dry <- log(2)/ clade1[clade1$ObsSt=="Dry","Alpha"]
+#    mean_halflife_dry <- round(mean(halflifes_dry / tree_height ), 3)
+#    se_halflife_dry <- round(sd(halflifes_dry / tree_height) / sqrt(length(halflifes_dry)), 2)
+#    halflifes_fleshy <- log(2)/ clade1[clade1$ObsSt=="Fleshy","Alpha"]
+#    mean_halflife_fleshy <- round(mean(halflifes_fleshy / tree_height), 2)
+#    se_halflife_fleshy <- round(sd(halflifes_fleshy / tree_height) / sqrt(length(halflifes_fleshy)), 2)
     #
     #mean_halflife_dry <- round(mean(log(2)/ clade1[clade1$ObsSt=="Dry","Alpha"]), 2)
     #se_halflife_dry <- round(sd(log(2)/ clade1[clade1$ObsSt=="Dry","Alpha"])  / sqrt(length(clade1[clade1$ObsSt=="Dry","Alpha"])), 2)
     #mean_halflife_fleshy <- round(mean(log(2)/ clade1[clade1$ObsSt=="Fleshy","Alpha"]), 2)
     #se_halflife_fleshy <- round(sd(log(2)/ clade1[clade1$ObsSt=="Fleshy","Alpha"]) / sqrt(length(clade1[clade1$ObsSt=="Fleshy","Alpha"])), 2)
     #
-    mean_dry_sigma <- round(mean(clade1[clade1$ObsSt=="Dry","Sigma"]),2)
-    se_dry_sigma <- round((sd(clade1[clade1$ObsSt=="Dry","Sigma"])  / sqrt(length(clade1[clade1$ObsSt=="Dry","Sigma"]))),2)
-    mean_fleshy_sigma <- round(mean(clade1[clade1$ObsSt=="Fleshy","Sigma"]),2)
-    se_fleshy_sigma <- round((sd(clade1[clade1$ObsSt=="Fleshy","Sigma"]) / sqrt(length(clade1[clade1$ObsSt=="Fleshy","Sigma"]))),2)
+#    mean_dry_sigma <- round(mean(clade1[clade1$ObsSt=="Dry","Sigma"]),2)
+#    se_dry_sigma <- round((sd(clade1[clade1$ObsSt=="Dry","Sigma"])  / sqrt(length(clade1[clade1$ObsSt#=="Dry","Sigma"]))),2)
+#    mean_fleshy_sigma <- round(mean(clade1[clade1$ObsSt=="Fleshy","Sigma"]),2)
+#    se_fleshy_sigma <- round((sd(clade1[clade1$ObsSt=="Fleshy","Sigma"]) / sqrt(length(clade1[clade1$ObsSt=="Fleshy","Sigma"]))),2)
     #
-    mean_dry_st_var <- round(mean(clade1[clade1$ObsSt=="Dry","Sigma"] / (2*clade1[clade1$ObsSt=="Dry","Alpha"])),2) 
-    se_dry_st_var <- round(sd(clade1[clade1$ObsSt=="Dry","Sigma"] / (2*clade1[clade1$ObsSt=="Dry","Alpha"])) / sqrt(length(clade1[clade1$ObsSt=="Dry","Sigma"])),2) 
-    mean_fleshy_st_var <- round(mean(clade1[clade1$ObsSt=="Fleshy","Sigma"] / (2*clade1[clade1$ObsSt=="Fleshy","Alpha"])),2) 
-    se_fleshy_st_var <- round(sd(clade1[clade1$ObsSt=="Fleshy","Sigma"] / (2*clade1[clade1$ObsSt=="Fleshy","Alpha"])) / sqrt(length(clade1[clade1$ObsSt=="Fleshy","Sigma"])),2)
+#    mean_dry_st_var <- round(mean(clade1[clade1$ObsSt=="Dry","Sigma"] / (2*clade1[clade1$ObsSt=="Dry","Alpha"])),2) 
+#    se_dry_st_var <- round(sd(clade1[clade1$ObsSt=="Dry","Sigma"] / (2*clade1[clade1$ObsSt=="Dry","Alpha"])) / sqrt(length(clade1[clade1$ObsSt=="Dry","Sigma"])),2) 
+#    mean_fleshy_st_var <- round(mean(clade1[clade1$ObsSt=="Fleshy","Sigma"] / (2*clade1[clade1$ObsSt=="Fleshy","Alpha"])),2) 
+#    se_fleshy_st_var <- round(sd(clade1[clade1$ObsSt=="Fleshy","Sigma"] / (2*clade1[clade1$ObsSt=="Fleshy","Alpha"])) / sqrt(length(clade1[clade1$ObsSt=="Fleshy","Sigma"])),2)
     #
-    transformed_theta <- exp(clade1[,"Optim"])
-    if(names(results)[i]=="temp") {
-    transformed_theta <- transformed_theta - 273.15
-    }
-    if(names(results)[i]=="arid") {
-    transformed_theta <- transformed_theta * 0.0001
-    }
-    mean_dry_theta_t <- round(mean(transformed_theta[clade1$ObsSt=="Dry"]),2)
-    se_dry_theta_t <- round(sd(transformed_theta[clade1$ObsSt=="Dry"]),2)
-    mean_fleshy_theta_t <- round(mean(transformed_theta[clade1$ObsSt=="Fleshy"]),2)
-    se_fleshy_theta_t <- round(sd(transformed_theta[clade1$ObsSt=="Fleshy"]),2)
+#    transformed_theta <- exp(clade1[,"Optim"])
+#    if(names(results)[i]=="temp") {
+#    transformed_theta <- transformed_theta - 273.15
+#    }
+#    if(names(results)[i]=="arid") {
+#    transformed_theta <- transformed_theta * 0.0001
+#    }
+#    mean_dry_theta_t <- round(mean(transformed_theta[clade1$ObsSt=="Dry"]),2)
+#    se_dry_theta_t <- round(sd(transformed_theta[clade1$ObsSt=="Dry"]),2)
+#    mean_fleshy_theta_t <- round(mean(transformed_theta[clade1$ObsSt=="Fleshy"]),2)
+#    se_fleshy_theta_t <- round(sd(transformed_theta[clade1$ObsSt=="Fleshy"]),2)
     #
-    total_fleshy <- c(clade_names[j],"Fleshy", 
-      #paste0(mean_fleshy_theta," (", se_fleshy_theta, ")"),
-      paste0(mean_fleshy_theta_t," (", se_fleshy_theta_t, ")"),
-      paste0(mean_fleshy_sigma," (", se_fleshy_sigma, ")"),
-      paste0(mean_fleshy_alpha," (", se_fleshy_alpha, ")"),
-      paste0(mean_halflife_fleshy," (", se_halflife_fleshy, ")"),
-      paste0(mean_fleshy_st_var," (", se_fleshy_st_var, ")"))
-      
-    total_dry <- c(clade_names[j],"Dry", 
-      #paste0(mean_dry_theta," (", se_dry_theta, ")"),
-      paste0(mean_dry_theta_t," (", se_dry_theta_t, ")"),
-      paste0(mean_dry_sigma," (", se_dry_sigma, ")"),
-      paste0(mean_dry_alpha," (", se_dry_alpha, ")"),
-      paste0(mean_halflife_dry," (", se_halflife_dry, ")"),
-      paste0(mean_dry_st_var," (", se_dry_st_var, ")"))
-      
-  final <- rbind(final, rbind(total_fleshy, total_dry))
-  }
-  final <- as.data.frame(final)
-  colnames(final) <- c("clade","fruit_type","theta_t","sigma2","alpha","half-life","stationary_var")
-  result_list[[i]] <- final
-  names(result_list)[i] <- labels[i]
-}
+#    total_fleshy <- c(clade_names[j],"Fleshy", 
+#      #paste0(mean_fleshy_theta," (", se_fleshy_theta, ")"),
+#      paste0(mean_fleshy_theta_t," (", se_fleshy_theta_t, ")"),
+#      paste0(mean_fleshy_sigma," (", se_fleshy_sigma, ")"),
+#      paste0(mean_fleshy_alpha," (", se_fleshy_alpha, ")"),
+#      paste0(mean_halflife_fleshy," (", se_halflife_fleshy, ")"),
+#      paste0(mean_fleshy_st_var," (", se_fleshy_st_var, ")"))
+#      
+#    total_dry <- c(clade_names[j],"Dry", 
+#      #paste0(mean_dry_theta," (", se_dry_theta, ")"),
+#      paste0(mean_dry_theta_t," (", se_dry_theta_t, ")"),
+#      paste0(mean_dry_sigma," (", se_dry_sigma, ")"),
+#      paste0(mean_dry_alpha," (", se_dry_alpha, ")"),
+#      paste0(mean_halflife_dry," (", se_halflife_dry, ")"),
+#      paste0(mean_dry_st_var," (", se_dry_st_var, ")"))
+#      
+#  final <- rbind(final, rbind(total_fleshy, total_dry))
+#  }
+#  final <- as.data.frame(final)
+#  colnames(final) <- c("clade","fruit_type","theta_t","sigma2","alpha","half-life","stationary_var")
+#  result_list[[i]] <- final
+#  names(result_list)[i] <- labels[i]
+#}
 
-write.csv(result_list, file=paste0(getwd(), "/tables/results_summary.csv"))
+#write.csv(result_list, file=paste0(getwd(), "/tables/results_summary.csv"))
 
 
 #------------------------------------
@@ -247,9 +247,9 @@ for(i in 1:length(climate_datasets)){
   names(result_list_new)[i] <- climate_datasets[i]
 }
 
+
 # Table 1 - results
 write.csv(result_list_new, file=paste0(getwd(), "/tables/results_summary_new.csv"))
-
 
 ##
 
@@ -647,14 +647,14 @@ colors_states <- pal[c(15,5)]
 my.formula <- y ~ x
 pal <- hcl.colors(30, palette = "Inferno", alpha = 1)
 colors_states <- pal[c(23,5)]
-reg_ai <- ggplot(data=result_list$arid.se, aes(y=theta_t, x=stationary_var, color=fruit_type)) +
+reg_ai <- ggplot(data=result_list$arid.se, aes(y=stationary_var, x=theta_t, color=fruit_type)) +
   #geom_smooth(method = "lm", se=F, linetype="dashed" ,formula = my.formula, col=hcl.colors(50, palette = "Inferno", alpha = 1)[10]) +
   geom_smooth(method = stats::lm,  se=F,  fullrange=TRUE, linetype="dashed" ,formula = my.formula) +
   stat_poly_eq(formula = my.formula, 
                aes(label = paste(..rr.label..)), 
                parse = TRUE) +         
   geom_point(aes(color=fruit_type),size=3) +
-  theme_bw() + scale_color_manual(values=colors_states) + xlim(-0.5, 3)
+  theme_bw() + scale_color_manual(values=colors_states) + ylim(-0.5, 3)
 pdf(paste0(getwd(), "/figures/theta_stavar_reg_ai.pdf"), height=2.5, width=4)
 reg_ai 
 dev.off()
@@ -662,13 +662,13 @@ dev.off()
 my.formula <- y ~ x
 pal <- hcl.colors(30, palette = "Inferno", alpha = 1)
 colors_states <- pal[c(23,5)]
-reg_mat <- ggplot(data=result_list$temp.se, aes(y=theta_t, x=stationary_var)) +
+reg_mat <- ggplot(data=result_list$temp.se, aes(y=stationary_var , x=theta_t)) +
   geom_smooth(method = stats::lm, se=F, linetype="dashed" ,formula = my.formula, col=hcl.colors(50, palette = "Inferno", alpha = 1)[10]) +
   #stat_poly_eq(formula = my.formula, 
   #             aes(label = paste(..rr.label..)), 
   #             parse = TRUE) +         
   geom_point(aes(color=fruit_type),size=3) +
-  theme_bw() + scale_color_manual(values=colors_states) + xlim(-0.5, 3)
+  theme_bw() + scale_color_manual(values=colors_states) + ylim(-0.5, 3)
 pdf(paste0(getwd(), "/figures/theta_stavar_reg_mat.pdf"), height=2.5, width=4)
 reg_mat 
 dev.off()
@@ -676,7 +676,7 @@ dev.off()
 my.formula <- y ~ x
 pal <- hcl.colors(30, palette = "Inferno", alpha = 1)
 colors_states <- pal[c(23,5)]
-reg_map <- ggplot(data=result_list$prec.se, aes(y=theta_t, x=stationary_var, color=fruit_type)) +
+reg_map <- ggplot(data=result_list$prec.se, aes(y=stationary_var, x= theta_t, color=fruit_type)) +
   #geom_smooth(method = "lm", se=F, linetype="dashed" ,formula = my.formula, col=hcl.colors(50, palette = "Inferno", alpha = 1)[10]) +
   geom_smooth(method = stats::lm,  se=F,  fullrange=TRUE, linetype="dashed" ,formula = my.formula) +
   
@@ -684,7 +684,7 @@ reg_map <- ggplot(data=result_list$prec.se, aes(y=theta_t, x=stationary_var, col
                aes(label = paste(..rr.label..)), 
                parse = TRUE) +         
   geom_point(aes(color=fruit_type),size=3) +
-  theme_bw() + scale_color_manual(values=colors_states)+ xlim(-0.5, 3) + ylim(0, 2500)
+  theme_bw() + scale_color_manual(values=colors_states)+ ylim(-0.5, 3) + xlim(0, 2500)
 pdf(paste0(getwd(), "/figures/theta_stavar_reg_map.pdf"), height=2.5, width=4.2)
 reg_map 
 dev.off()

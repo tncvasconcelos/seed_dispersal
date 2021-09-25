@@ -27,6 +27,7 @@ summstats <- lapply(paste0(climate_data.dir, "/", summstats_files), read.csv)
 
 # ASR results
 asr_files <- list.files(corhmm.dir)[grep("ASR", list.files(corhmm.dir))]
+asr_files <- subset(asr_files, asr_files!= "Apocynaceae-21_02_25-ASR.csv")
 asr <- lapply(paste0(corhmm.dir, "/", asr_files), function(x) read.csv(x)[,-1])
 
 # labeling 
@@ -193,8 +194,10 @@ for(group_index in 1:length(trees)) {
     names(mode) <- cleaned_table$species
   }
 
+  #pal <- hcl.colors(30, palette = "Inferno", alpha = 1)
+  #colors_states <- pal[c(15,5)]
   pal <- hcl.colors(30, palette = "Inferno", alpha = 1)
-  colors_states <- pal[c(15,5)]
+  colors_states <- pal[c(23,5)]
   mode_cols <- mode
   mode_cols[mode_cols=="Fleshy"] <- colors_states[2]
   mode_cols[mode_cols=="Dry"] <- colors_states[1]

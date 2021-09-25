@@ -1,7 +1,7 @@
 # 
 Datasets and codes linked to the manuscript: 
 
-The indirect role of frugivores in slowing down rates of climatic niche evolution in flowering plants
+Linking mode of seed dispersal and climatic niche evolution in flowering plants
 
 Thais Vasconcelos, James Boyko, and Jeremy Beaulieu
 

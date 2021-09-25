@@ -1,5 +1,5 @@
 # 
-Datasets and codes linked to the manuscript: 
+Datasets and codes for the manuscript: 
 
 Linking mode of seed dispersal and climatic niche evolution in flowering plants
 

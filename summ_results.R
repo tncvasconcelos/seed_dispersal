@@ -16,6 +16,7 @@ library(ggplot2)
 tree.dir <- paste0(getwd(), "/trees")
 tree_files <- list.files(tree.dir, ".tre")
 trees <- lapply(paste0(tree.dir, "/", tree_files), read.tree)
+
 trees <- lapply(trees, ladderize)
 tree_labels <- unlist(lapply(strsplit(tree_files, "_"), "[[", 1))
 names(trees) <- tree_labels
@@ -246,13 +247,6 @@ for(i in 1:length(climate_datasets)){
   result_list_new[[i]] <- final
   names(result_list_new)[i] <- climate_datasets[i]
 }
-
-
-# Table 1 - results
-write.csv(result_list_new, file=paste0(getwd(), "/tables/results_summary_new.csv"))
-
-##
-
 
 #result_list_new <- list()
 #for(i in 1:length(climate_datasets)){
@@ -488,17 +482,21 @@ names(comparison.tables) <- c("ai","map","mat")
 # AI
 comparison.tables$ai$clade_plus_fruit <- paste0(comparison.tables$ai$clade, " (",comparison.tables$ai$fruit_type,")")
 
+
 p <- ggplot(comparison.tables$ai, aes(factor(clade_plus_fruit),
-                                      x=mean_trait,xmin=mean_trait-2*sd,xmax=mean_trait+2*sd,color=factor(class)))+ #color=factor(fruit_type):factor(class)
+                                      x=mean_trait,xmin=mean_trait-2*sd,xmax=mean_trait+2*sd,color=factor(fruit_type), shape = class))+ #color=factor(fruit_type):factor(class)
   geom_pointrange()+
   theme_bw() #+ 
   #facet_wrap(~fruit_type, ncol=1, nrow=2) 
 
+pal <- hcl.colors(30, palette = "Inferno", alpha = 1)
+colors_states <- pal[c(23,5)]
 
-pal <- hcl.colors(30, palette = "Viridis", alpha = 1)
-colors_states <- pal[c(15,5)]
+#pal <- hcl.colors(30, palette = "Viridis", alpha = 1)
+#colors_states <- pal[c(15,5)]
 p + scale_color_manual(values=colors_states)+
-  theme(legend.position  = "top")
+  theme(legend.position  = "top") + 
+  scale_shape_manual(values = c(0, 16))
 
 
 pdf(paste0(getwd(), "/figures/ai_comp.pdf"),  height=3, width=4)
@@ -514,7 +512,6 @@ p <- ggplot(comparison.tables$map, aes(factor(clade_plus_fruit),
   geom_pointrange()+
   theme_bw() #+ 
 #facet_wrap(~fruit_type, ncol=1, nrow=2) 
-
 
 pal <- hcl.colors(30, palette = "Viridis", alpha = 1)
 colors_states <- pal[c(15,5)]
@@ -692,3 +689,383 @@ dev.off()
 #grid.arrange(reg_ai, reg_mat, reg_map, ncol=1, nrow = 3)
 
 
+
+##################################
+# 2021-10-29 Revision: making a nicer figure for results
+##################################
+library(ape)
+{
+result_list_new <- list()
+for(i in 1:length(climate_datasets)){
+  tmp_climate_set <- results[grep(climate_datasets[i], names(results))]
+  final <- matrix(nrow=0,ncol=8)
+  
+  for(j in 1:length(clade_names)){
+    tmp_group_set <- tmp_climate_set[grep(clade_names[j], names(tmp_climate_set))][[1]]
+    tmp_trait_set <- traits[grep(clade_names[j], names(traits))][[1]][,c("species","Fruit_type")]
+    tmp_trait_group_set <- merge(tmp_group_set, tmp_trait_set, by.x="X", by.y="species")
+    tmp_tree <- trees[which(names(trees)==clade_names[j])][[1]]
+    
+    mean_dry_alpha <- round(mean(tmp_trait_group_set[tmp_trait_group_set$Fruit_type=="Dry","alpha"]),2)
+    se_dry_alpha <- round(sd(tmp_trait_group_set[tmp_trait_group_set$Fruit_type=="Dry","alpha"]) / sqrt(length(tmp_trait_group_set[tmp_trait_group_set$Fruit_type=="Dry","alpha"])),2)
+    mean_fleshy_alpha <- round(mean(tmp_trait_group_set[tmp_trait_group_set$Fruit_type=="Fleshy","alpha"]),2)
+    se_fleshy_alpha <- round(sd(tmp_trait_group_set[tmp_trait_group_set$Fruit_type=="Fleshy","alpha"]) / sqrt(length(tmp_trait_group_set[tmp_trait_group_set$Fruit_type=="Fleshy","alpha"])),2)
+    #
+    tree_height <- get.node.age(tmp_tree)[Ntip(tmp_tree)+1]
+    halflifes_dry <- log(2)/ tmp_trait_group_set[tmp_trait_group_set$Fruit_type=="Dry","alpha"]
+    mean_halflife_dry <- round(mean(halflifes_dry / tree_height ), 3)
+    se_halflife_dry <- round(sd(halflifes_dry / tree_height) / sqrt(length(halflifes_dry)), 2)
+    halflifes_fleshy <- log(2)/ tmp_trait_group_set[tmp_trait_group_set$Fruit_type=="Fleshy","alpha"]
+    mean_halflife_fleshy <- round(mean(halflifes_fleshy / tree_height), 2)
+    se_halflife_fleshy <- round(sd(halflifes_fleshy / tree_height) / sqrt(length(halflifes_fleshy)), 2)
+    #
+    mean_dry_sigma <- round(mean(tmp_trait_group_set[tmp_trait_group_set$Fruit_type=="Dry","sigma.sq"]),2)
+    se_dry_sigma <- round((sd(tmp_trait_group_set[tmp_trait_group_set$Fruit_type=="Dry","sigma.sq"])  / sqrt(length(tmp_trait_group_set[tmp_trait_group_set$Fruit_type=="Dry","sigma.sq"]))),2)
+    mean_fleshy_sigma <- round(mean(tmp_trait_group_set[tmp_trait_group_set$Fruit_type=="Fleshy","sigma.sq"]),2)
+    se_fleshy_sigma <- round((sd(tmp_trait_group_set[tmp_trait_group_set$Fruit_type=="Fleshy","sigma.sq"]) / sqrt(length(tmp_trait_group_set[tmp_trait_group_set$Fruit_type=="Fleshy","sigma.sq"]))),2)
+    #
+    mean_dry_st_var <- round(mean(tmp_trait_group_set[tmp_trait_group_set$Fruit_type=="Dry","sigma.sq"] / (2*tmp_trait_group_set[tmp_trait_group_set$Fruit_type=="Dry","alpha"])),2) 
+    se_dry_st_var <- round(sd(tmp_trait_group_set[tmp_trait_group_set$Fruit_type=="Dry","sigma.sq"] / (2*tmp_trait_group_set[tmp_trait_group_set$Fruit_type=="Dry","alpha"])) / sqrt(length(tmp_trait_group_set[tmp_trait_group_set$Fruit_type=="Dry","sigma.sq"])),2) 
+    mean_fleshy_st_var <- round(mean(tmp_trait_group_set[tmp_trait_group_set$Fruit_type=="Fleshy","sigma.sq"] / (2*tmp_trait_group_set[tmp_trait_group_set$Fruit_type=="Fleshy","alpha"])),2) 
+    se_fleshy_st_var <- round(sd(tmp_trait_group_set[tmp_trait_group_set$Fruit_type=="Fleshy","sigma.sq"] / (2*tmp_trait_group_set[tmp_trait_group_set$Fruit_type=="Fleshy","alpha"])) / sqrt(length(tmp_trait_group_set[tmp_trait_group_set$Fruit_type=="Fleshy","sigma.sq"])),2)
+    #
+    transformed_theta <- exp(tmp_trait_group_set[,"theta"])
+    
+    if(climate_datasets[i]=="temp.se") {
+      transformed_theta <- transformed_theta - 273.15
+    }
+    if(climate_datasets[i]=="arid.se") {
+      transformed_theta <- transformed_theta * 0.0001
+    }
+    
+    mean_dry_theta_t <- round(mean(transformed_theta[tmp_trait_group_set$Fruit_type=="Dry"]),2)
+    se_dry_theta_t <- round(sd(transformed_theta[tmp_trait_group_set$Fruit_type=="Dry"]),2)
+    mean_fleshy_theta_t <- round(mean(transformed_theta[tmp_trait_group_set$Fruit_type=="Fleshy"]),2)
+    se_fleshy_theta_t <- round(sd(transformed_theta[tmp_trait_group_set$Fruit_type=="Fleshy"]),2)
+    #
+    total_fleshy <- c(clade_names[j],"Fleshy", 
+                      #paste0(mean_fleshy_theta," (", se_fleshy_theta, ")"),
+                      mean_fleshy_theta_t, se_fleshy_theta_t, 
+                      mean_halflife_fleshy, se_halflife_fleshy, 
+                      mean_fleshy_st_var, se_fleshy_st_var)
+    
+    total_dry <- c(clade_names[j],"Dry", 
+                   #paste0(mean_dry_theta," (", se_dry_theta, ")"),
+                   mean_dry_theta_t, se_dry_theta_t,
+                   mean_halflife_dry, se_halflife_dry,
+                   mean_dry_st_var, se_dry_st_var)
+    
+    final <- rbind(final, rbind(total_fleshy, total_dry))
+  }
+  final <- as.data.frame(final)
+  colnames(final) <- c("clade","fruit_type","theta_t","se_theta_t","half-life","se_half-life","stationary_var","se_stationary_var")
+  result_list_new[[i]] <- final
+  names(result_list_new)[i] <- climate_datasets[i]
+}
+level_order <- rev(c('Apocynaceae', 'Ericaceae', 'Melastomataceae',"Rosaceae","Solanaceae"))
+}
+#########################################
+# Stationary variance
+#########################################
+
+#sds <- sd(as.numeric(result_list_new$arid$stationary_var))
+#means <- mean(as.numeric(result_list_new$arid$stationary_var))
+
+
+result_list_new$arid$stationary_var <- as.numeric(result_list_new$arid$stationary_var)
+result_list_new$arid$se_stationary_var <- as.numeric(result_list_new$arid$se_stationary_var)
+plot4 <- ggplot(result_list_new$arid, aes(x = factor(clade, level = level_order) , y = stationary_var, group = fruit_type, color = fruit_type)) +
+  geom_point(size=2) +
+  theme_bw() + 
+  geom_errorbar(aes(ymin = stationary_var - se_stationary_var, ymax = stationary_var + se_stationary_var), width = 0.75) +
+  #geom_line(linetype = 1, size=0.25)+
+  coord_flip(ylim = c(-0.25, 3)) +
+  theme(axis.title.x=element_blank(), axis.title.y=element_blank()) 
+
+
+
+#pal <- hcl.colors(30, palette = "Viridis", alpha = 1)
+#colors_states <- pal[c(15,5)]
+pdf("plot4.pdf",width=3, height=2)
+plot4 + scale_color_manual(values=colors_states)+
+  theme(legend.position  = "top") + 
+  scale_shape_manual(values = c(0, 16))
+dev.off()
+
+result_list_new$temp$stationary_var <- as.numeric(result_list_new$temp$stationary_var)
+result_list_new$temp$se_stationary_var <- as.numeric(result_list_new$temp$se_stationary_var)
+plot5 <- ggplot(result_list_new$temp, aes(x = factor(clade, level = level_order), y = stationary_var, group = fruit_type, color = fruit_type)) +
+  geom_point(size=2) +
+  theme_bw() +
+  geom_errorbar(aes(ymin = stationary_var - se_stationary_var, ymax = stationary_var + se_stationary_var), width =  0.75) +
+  #geom_line(linetype = 1, size=0.25)+
+  coord_flip(ylim = c(-0.25, 3)) +
+  theme(axis.title.x=element_blank(), axis.title.y=element_blank())
+#pal <- hcl.colors(30, palette = "Viridis", alpha = 1)
+#colors_states <- pal[c(15,5)]
+pdf("plot5.pdf",width=3, height=2)
+plot5 + scale_color_manual(values=colors_states)+
+  theme(legend.position  = "top") + 
+  scale_shape_manual(values = c(0, 16))
+dev.off()
+
+result_list_new$prec$stationary_var <- as.numeric(result_list_new$prec$stationary_var)
+result_list_new$prec$se_stationary_var <- as.numeric(result_list_new$prec$se_stationary_var)
+plot6 <- ggplot(result_list_new$prec, aes(x = factor(clade, level = level_order), y = stationary_var, group = fruit_type, color = fruit_type)) +
+  geom_point(size=2) +
+  theme_bw() +
+  geom_errorbar(aes(ymin = stationary_var - se_stationary_var, ymax = stationary_var + se_stationary_var), width = 0.75) +
+  #geom_line(linetype = 1, size=0.25)+
+  coord_flip(ylim = c(-0.25, 3)) +
+  theme(axis.title.x=element_blank(), axis.title.y=element_blank())
+#pal <- hcl.colors(30, palette = "Viridis", alpha = 1)
+#colors_states <- pal[c(15,5)]
+pdf("plot6.pdf",width=3, height=2)
+plot6 + scale_color_manual(values=colors_states)+
+  theme(legend.position  = "top") + 
+  scale_shape_manual(values = c(0, 16))
+dev.off()
+
+#########################################
+# Half-life
+#########################################
+result_list_new$arid$`half-life` <- as.numeric(result_list_new$arid$`half-life`)
+result_list_new$arid$`se_half-life` <- as.numeric(result_list_new$arid$`se_half-life`)
+plot7 <- ggplot(result_list_new$arid, aes(x = factor(clade, level = level_order), y = `half-life`, group = fruit_type, color = fruit_type)) +
+  geom_point(size=2) +
+  theme_bw() +
+  geom_errorbar(aes(ymin = `half-life` - `se_half-life`, ymax = `half-life` + `se_half-life`), width =  0.75) +
+  #geom_line(linetype = 1, size=0.25)+
+  coord_flip(ylim = c(0, 0.25)) +
+  theme(axis.title.x=element_blank(), axis.title.y=element_blank())
+#pal <- hcl.colors(30, palette = "Viridis", alpha = 1)
+#colors_states <- pal[c(15,5)]
+pdf("plot7.pdf", width=3, height=2)
+plot7 + scale_color_manual(values=colors_states)+
+  theme(legend.position  = "top") + 
+  scale_shape_manual(values = c(0, 16))
+dev.off()
+
+result_list_new$temp$`half-life` <- as.numeric(result_list_new$temp$`half-life`)
+result_list_new$temp$`se_half-life` <- as.numeric(result_list_new$temp$`se_half-life`)
+plot8 <- ggplot(result_list_new$temp, aes(x = factor(clade, level = level_order) , y = `half-life`, group = fruit_type, color = fruit_type)) +
+  geom_point(size=2) +
+  theme_bw() +
+  geom_errorbar(aes(ymin = `half-life` - `se_half-life`, ymax = `half-life` + `se_half-life`), width =  0.75) +
+  #geom_line(linetype = 1, size=0.25)+
+  coord_flip(ylim = c(0, 0.25)) +
+  theme(axis.title.x=element_blank(), axis.title.y=element_blank())
+#pal <- hcl.colors(30, palette = "Viridis", alpha = 1)
+#colors_states <- pal[c(15,5)]
+pdf("plot8.pdf",width=3, height=2)
+plot8 + scale_color_manual(values=colors_states)+
+  theme(legend.position  = "top") + 
+  scale_shape_manual(values = c(0, 16))
+dev.off()
+
+result_list_new$prec$`half-life` <- as.numeric(result_list_new$prec$`half-life`)
+result_list_new$prec$`se_half-life` <- as.numeric(result_list_new$prec$`se_half-life`)
+plot9 <- ggplot(result_list_new$prec, aes(x = factor(clade, level = level_order), y = `half-life`, group = fruit_type, color = fruit_type)) +
+  geom_point(size=2) +
+  theme_bw() +
+  geom_errorbar(aes(ymin = `half-life` - `se_half-life`, ymax = `half-life` + `se_half-life`), width =  0.75) +
+  #geom_line(linetype = 1, size=0.25)+
+  coord_flip(ylim = c(0, 0.25)) +
+  theme(axis.title.x=element_blank(), axis.title.y=element_blank())
+#pal <- hcl.colors(30, palette = "Viridis", alpha = 1)
+#colors_states <- pal[c(15,5)]
+pdf("plot9.pdf",width=3, height=2)
+plot9 + scale_color_manual(values=colors_states)+
+  theme(legend.position  = "top") + 
+  scale_shape_manual(values = c(0, 16))
+dev.off()
+
+
+####################
+####################
+{
+  result_list_new <- list()
+  for(i in 1:length(climate_datasets)){
+    tmp_climate_set <- results[grep(climate_datasets[i], names(results))]
+    final <- matrix(nrow=0,ncol=8)
+    
+    for(j in 1:length(clade_names)){
+      tmp_group_set <- tmp_climate_set[grep(clade_names[j], names(tmp_climate_set))][[1]]
+      tmp_trait_set <- traits[grep(clade_names[j], names(traits))][[1]][,c("species","Fruit_type")]
+      tmp_trait_group_set <- merge(tmp_group_set, tmp_trait_set, by.x="X", by.y="species")
+      tmp_tree <- trees[which(names(trees)==clade_names[j])][[1]]
+      
+      mean_dry_alpha <- round(mean(tmp_trait_group_set[tmp_trait_group_set$Fruit_type=="Dry","alpha"]),2)
+      se_dry_alpha <- round(sd(tmp_trait_group_set[tmp_trait_group_set$Fruit_type=="Dry","alpha"]) / sqrt(length(tmp_trait_group_set[tmp_trait_group_set$Fruit_type=="Dry","alpha"])),2)
+      mean_fleshy_alpha <- round(mean(tmp_trait_group_set[tmp_trait_group_set$Fruit_type=="Fleshy","alpha"]),2)
+      se_fleshy_alpha <- round(sd(tmp_trait_group_set[tmp_trait_group_set$Fruit_type=="Fleshy","alpha"]) / sqrt(length(tmp_trait_group_set[tmp_trait_group_set$Fruit_type=="Fleshy","alpha"])),2)
+      #
+      tree_height <- get.node.age(tmp_tree)[Ntip(tmp_tree)+1]
+      halflifes_dry <- log(2)/ tmp_trait_group_set[tmp_trait_group_set$Fruit_type=="Dry","alpha"]
+      mean_halflife_dry <- round(mean(halflifes_dry / tree_height ), 3)
+      se_halflife_dry <- round(sd(halflifes_dry / tree_height) / sqrt(length(halflifes_dry)), 2)
+      halflifes_fleshy <- log(2)/ tmp_trait_group_set[tmp_trait_group_set$Fruit_type=="Fleshy","alpha"]
+      mean_halflife_fleshy <- round(mean(halflifes_fleshy / tree_height), 2)
+      se_halflife_fleshy <- round(sd(halflifes_fleshy / tree_height) / sqrt(length(halflifes_fleshy)), 2)
+      #
+      mean_dry_sigma <- round(mean(tmp_trait_group_set[tmp_trait_group_set$Fruit_type=="Dry","sigma.sq"]),2)
+      se_dry_sigma <- round((sd(tmp_trait_group_set[tmp_trait_group_set$Fruit_type=="Dry","sigma.sq"])  / sqrt(length(tmp_trait_group_set[tmp_trait_group_set$Fruit_type=="Dry","sigma.sq"]))),2)
+      mean_fleshy_sigma <- round(mean(tmp_trait_group_set[tmp_trait_group_set$Fruit_type=="Fleshy","sigma.sq"]),2)
+      se_fleshy_sigma <- round((sd(tmp_trait_group_set[tmp_trait_group_set$Fruit_type=="Fleshy","sigma.sq"]) / sqrt(length(tmp_trait_group_set[tmp_trait_group_set$Fruit_type=="Fleshy","sigma.sq"]))),2)
+      #
+      mean_dry_st_var <- round(mean(tmp_trait_group_set[tmp_trait_group_set$Fruit_type=="Dry","sigma.sq"] / (2*tmp_trait_group_set[tmp_trait_group_set$Fruit_type=="Dry","alpha"])),2) 
+      se_dry_st_var <- round(sd(tmp_trait_group_set[tmp_trait_group_set$Fruit_type=="Dry","sigma.sq"] / (2*tmp_trait_group_set[tmp_trait_group_set$Fruit_type=="Dry","alpha"])) / sqrt(length(tmp_trait_group_set[tmp_trait_group_set$Fruit_type=="Dry","sigma.sq"])),2) 
+      mean_fleshy_st_var <- round(mean(tmp_trait_group_set[tmp_trait_group_set$Fruit_type=="Fleshy","sigma.sq"] / (2*tmp_trait_group_set[tmp_trait_group_set$Fruit_type=="Fleshy","alpha"])),2) 
+      se_fleshy_st_var <- round(sd(tmp_trait_group_set[tmp_trait_group_set$Fruit_type=="Fleshy","sigma.sq"] / (2*tmp_trait_group_set[tmp_trait_group_set$Fruit_type=="Fleshy","alpha"])) / sqrt(length(tmp_trait_group_set[tmp_trait_group_set$Fruit_type=="Fleshy","sigma.sq"])),2)
+      #
+      transformed_theta <- exp(tmp_trait_group_set[,"theta"])
+      
+      if(climate_datasets[i]=="temp.se") {
+        transformed_theta <- transformed_theta - 273.15
+      }
+      if(climate_datasets[i]=="arid.se") {
+        transformed_theta <- transformed_theta * 0.0001
+      }
+      
+      mean_dry_theta_t <- round(mean(transformed_theta[tmp_trait_group_set$Fruit_type=="Dry"]),2)
+      se_dry_theta_t <- round(sd(transformed_theta[tmp_trait_group_set$Fruit_type=="Dry"]),2)
+      mean_fleshy_theta_t <- round(mean(transformed_theta[tmp_trait_group_set$Fruit_type=="Fleshy"]),2)
+      se_fleshy_theta_t <- round(sd(transformed_theta[tmp_trait_group_set$Fruit_type=="Fleshy"]),2)
+      #
+      total_fleshy <- c(clade_names[j],"Fleshy", 
+                        #paste0(mean_fleshy_theta," (", se_fleshy_theta, ")"),
+                        mean_fleshy_theta_t, se_fleshy_theta_t, 
+                        mean_halflife_fleshy, se_halflife_fleshy, 
+                        mean_fleshy_st_var, se_fleshy_st_var)
+      
+      total_dry <- c(clade_names[j],"Dry", 
+                     #paste0(mean_dry_theta," (", se_dry_theta, ")"),
+                     mean_dry_theta_t, se_dry_theta_t,
+                     mean_halflife_dry, se_halflife_dry,
+                     mean_dry_st_var, se_dry_st_var)
+      
+      final <- rbind(final, rbind(total_fleshy, total_dry))
+    }
+    final <- as.data.frame(final)
+    colnames(final) <- c("clade","fruit_type","theta_t","se_theta_t","half-life","se_half-life","stationary_var","se_stationary_var")
+    result_list_new[[i]] <- final
+    names(result_list_new)[i] <- climate_datasets[i]
+  }
+  level_order <- rev(c('Apocynaceae', 'Ericaceae', 'Melastomataceae',"Rosaceae","Solanaceae"))
+}
+full_table_figure <- list()
+vars <- c("arid","prec","temp")
+for(i in 1:3) {
+  one_var <- vars[i]
+  one_table <- result_list_new[[grep(one_var, names(result_list_new))]]
+  means_one_var <- subset(all_clades, grepl(one_var, all_clades[,2])) 
+  means_one_var <- as.data.frame(means_one_var)
+  means_one_var$fruit_type <- gsub("fleshy","Fleshy", means_one_var$fruit_type)
+  means_one_var$fruit_type <- gsub("dry","Dry", means_one_var$fruit_type)
+  means_one_var <- means_one_var[,c("n","mean_trait","sd")]
+  full_table_figure[[i]] <- cbind(one_table, means_one_var)
+}
+names(full_table_figure) <- vars
+
+result_list_new <- full_table_figure
+pal <- hcl.colors(30, palette = "Inferno", alpha = 1)
+colors_states <- pal[c(23,5)]
+pal2 <- hcl.colors(30, palette = "Inferno", alpha = 0.5)
+colors_states2 <- pal[c(25,7)]
+
+
+#########################################
+# Figure for theta vs. mean
+# Hard-coded (of course)
+#########################################
+# aridity
+#########################################
+result_list_new$arid$theta_t <- as.numeric(result_list_new$arid$theta_t)
+result_list_new$arid$se_theta_t <- as.numeric(result_list_new$arid$se_theta_t)
+result_list_new$arid$mean_trait <- as.numeric(result_list_new$arid$mean_trait)
+result_list_new$arid$sd <- as.numeric(result_list_new$arid$sd)
+
+tmp1 <- result_list_new$arid[,c("clade","mean_trait","sd")]
+tmp1$class <- paste0(result_list_new$arid$fruit_type, "_mean") 
+tmp2 <- result_list_new$arid[,c("clade","theta_t","se_theta_t")]
+tmp2$class <- paste0(result_list_new$arid$fruit_type, "_optma")
+colnames(tmp2) <- colnames(tmp1) <- c("clade","mean", "sd", "class")
+table_for_plot <- rbind(tmp1, tmp2)
+
+plot1 <- ggplot(table_for_plot, aes(x = factor(clade, level = level_order), y = mean, group = class, color = class, linetype = class, shape=class)) +
+  geom_point(size=c(2)) +
+  theme_bw() +
+  #geom_line(size=c(0.25))+
+  geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width =  0.75, linetype=1) +
+  coord_flip() +
+  theme(axis.title.x=element_blank(), axis.title.y=element_blank()) 
+
+pdf("plot1.pdf",width=3, height=2)
+plot1 + scale_color_manual(values=c(colors_states2[1],colors_states[1], colors_states2[2],colors_states[2])) +
+  scale_shape_manual(values = c(1, 16, 1, 16)) +
+  scale_linetype_manual("", values=c(2,1,2,1)) +
+  theme(legend.position  = "top") 
+
+dev.off()
+
+#########################################
+# temperature
+#########################################
+result_list_new$temp$theta_t <- as.numeric(result_list_new$temp$theta_t)
+result_list_new$temp$se_theta_t <- as.numeric(result_list_new$temp$se_theta_t)
+result_list_new$temp$mean_trait <- as.numeric(result_list_new$temp$mean_trait)
+result_list_new$temp$sd <- as.numeric(result_list_new$temp$sd)
+
+tmp1 <- result_list_new$temp[,c("clade","mean_trait","sd")]
+tmp1$class <- paste0(result_list_new$temp$fruit_type, "_mean") 
+tmp2 <- result_list_new$temp[,c("clade","theta_t","se_theta_t")]
+tmp2$class <- paste0(result_list_new$temp$fruit_type, "_optma")
+colnames(tmp2) <- colnames(tmp1) <- c("clade","mean", "sd", "class")
+table_for_plot <- rbind(tmp1, tmp2)
+
+plot2 <- ggplot(table_for_plot, aes(x = factor(clade, level = level_order) , y = mean, group = class, color = class, linetype = class, shape=class)) +
+  geom_point(size=c(2)) +
+  theme_bw() +
+  #geom_line(size=c(0.25))+
+  geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.75, linetype=1) +
+  coord_flip() +
+  theme(axis.title.x=element_blank(), axis.title.y=element_blank()) 
+
+pdf("plot2.pdf",width=3, height=2)
+plot2 + scale_color_manual(values=c(colors_states2[1],colors_states[1], colors_states2[2],colors_states[2])) +
+  scale_shape_manual(values = c(1, 16, 1, 16)) +
+  scale_linetype_manual("", values=c(2,1,2,1)) +
+  theme(legend.position  = "top") 
+
+dev.off()
+
+#########################################
+# precipitation
+#########################################
+result_list_new$prec$theta_t <- as.numeric(result_list_new$prec$theta_t)
+result_list_new$prec$se_theta_t <- as.numeric(result_list_new$prec$se_theta_t)
+result_list_new$prec$mean_trait <- as.numeric(result_list_new$prec$mean_trait)
+result_list_new$prec$sd <- as.numeric(result_list_new$prec$sd)
+
+tmp1 <- result_list_new$prec[,c("clade","mean_trait","sd")]
+tmp1$class <- paste0(result_list_new$prec$fruit_type, "_mean") 
+tmp2 <- result_list_new$prec[,c("clade","theta_t","se_theta_t")]
+tmp2$class <- paste0(result_list_new$prec$fruit_type, "_optma")
+colnames(tmp2) <- colnames(tmp1) <- c("clade","mean", "sd", "class")
+table_for_plot <- rbind(tmp1, tmp2)
+
+plot3 <- ggplot(table_for_plot, aes(x = factor(clade, level = level_order) , y = mean, group = class, color = class, linetype = class, shape=class)) +
+  geom_point(size=c(2)) +
+  theme_bw() +
+  #geom_line(size=c(0.25))+
+  geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.75, linetype=1) +
+  coord_flip() +
+  theme(axis.title.x=element_blank(), axis.title.y=element_blank()) 
+
+pdf("plot3.pdf",width=3, height=2)
+plot3 + scale_color_manual(values=c(colors_states2[1],colors_states[1], colors_states2[2],colors_states[2])) +
+  scale_shape_manual(values = c(1, 16, 1, 16)) +
+  scale_linetype_manual("", values=c(2,1,2,1)) +
+  theme(legend.position  = "top") 
+
+dev.off()
